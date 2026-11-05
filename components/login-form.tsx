@@ -33,7 +33,11 @@ export function LoginForm() {
           response.error.message || "Check your email and password.",
         );
       toast.success("Welcome back.");
-      router.push("/careers");
+      router.push(
+        new URLSearchParams(window.location.search).get("next") === "/admin"
+          ? "/admin"
+          : "/careers",
+      );
       router.refresh();
     } catch (error) {
       const message =

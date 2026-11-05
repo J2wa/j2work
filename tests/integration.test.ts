@@ -34,6 +34,9 @@ test(
           BETTER_AUTH_SECRET: randomBytes(48).toString("hex"),
           BETTER_AUTH_URL: origin,
           NODE_ENV: "production",
+          ADMIN_USER_IDS: "test-admin",
+          RESEND_API_KEY: "",
+          RESEND_FROM_EMAIL: "",
         },
         stdio: ["ignore", "pipe", "pipe"],
       },
@@ -189,6 +192,150 @@ test(
       );
       assert.equal(records.rows.length, 1);
       assert.equal(records.rows[0].applicant_id, id);
+      const notifications = await client.execute(
+        "SELECT payload,sent_at,error FROM application_emails",
+      );
+      assert.equal(notifications.rows.length, 1);
+      assert.equal(notifications.rows[0].sent_at, null);
+      assert.equal(notifications.rows[0].error, "Email setup incomplete");
+      assert.deepEqual(JSON.parse(String(notifications.rows[0].payload)).to, [
+        "acesintelligenceph@gmail.com",
+      ]);
+      const project = {
+        title: "New annotation project",
+        department: "AI Data",
+        roleType: "Annotator",
+        workSetting: "Part-Time",
+        location: "Philippines",
+        remote: true,
+        summary: "Annotate video for an AI project.",
+        description:
+          "Review video clips and carefully label the relevant actions.",
+        requirements: "Attention to detail",
+        isActive: true,
+      };
+      assert.equal((await post("/api/admin/projects", project)).status, 403);
+      assert.equal(
+        (await post("/api/admin/projects", project, cookie)).status,
+        403,
+      );
+      assert.equal(
+        (
+          await fetch(origin + "/api/admin/resume?id=test", {
+            headers: { Cookie: cookie },
+          })
+        ).status,
+        403,
+      );
+      // Seed an approved admin and session directly in the isolated test database.
+      await client.execute({
+        sql: "INSERT INTO applicants(id,full_name,email,email_verified,preferred_work_setting,created_at,updated_at) VALUES(?,?,?,?,?,?,?)",
+        args: [
+          "test-admin",
+          "Admin",
+          "admin@example.com",
+          1,
+          "Full-Time",
+          Date.now(),
+          Date.now(),
+        ],
+      });
+      await client.execute({
+        sql: "UPDATE sessions SET user_id=? WHERE user_id=?",
+        args: ["test-admin", id],
+      });
+      assert.equal(
+        (
+          await post(
+            "/api/admin/projects",
+            project,
+            cookie,
+            "https://attacker.example",
+          )
+        ).status,
+        403,
+      );
+      assert.equal(
+        (await post("/api/admin/projects", { ...project, title: "" }, cookie))
+          .status,
+        400,
+      );
+      const created = await post("/api/admin/projects", project, cookie);
+      assert.equal(created.status, 201);
+      const newProject = await created.json();
+      const adminPage = await fetch(origin + "/admin", {
+        headers: { Cookie: cookie },
+      });
+      assert.equal(adminPage.status, 200);
+      assert.match(await adminPage.text(), /Applicant inbox/);
+      const patch = (path: string, body: object) =>
+        fetch(origin + path, {
+          method: "PATCH",
+          headers: {
+            Origin: origin,
+            Cookie: cookie,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+      assert.equal(
+        (
+          await patch("/api/admin/projects", {
+            ...project,
+            id: newProject.id,
+            isActive: false,
+          })
+        ).status,
+        200,
+      );
+      const appId = String(
+        (await client.execute("SELECT id FROM applications")).rows[0].id,
+      );
+      assert.equal(
+        (
+          await patch("/api/admin/applications", {
+            id: appId,
+            status: "shortlisted",
+          })
+        ).status,
+        200,
+      );
+      assert.equal(
+        (
+          await patch("/api/admin/applications", {
+            id: appId,
+            status: "invalid",
+          })
+        ).status,
+        400,
+      );
+      assert.equal(
+        (
+          await patch("/api/admin/applications", {
+            id: appId,
+            retryEmail: true,
+          })
+        ).status,
+        200,
+      );
+      assert.equal(
+        (await client.execute("SELECT status FROM applications")).rows[0]
+          .status,
+        "shortlisted",
+      );
+      assert.equal(
+        (
+          await client.execute({
+            sql: "SELECT is_active FROM jobs WHERE id=?",
+            args: [newProject.id],
+          })
+        ).rows[0].is_active,
+        0,
+      );
+      await client.execute({
+        sql: "UPDATE sessions SET user_id=? WHERE user_id=?",
+        args: [id, "test-admin"],
+      });
       const profile = await fetch(origin + "/api/profile", {
         method: "PATCH",
         headers: {

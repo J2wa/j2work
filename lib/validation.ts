@@ -45,3 +45,16 @@ export function resumeError(
     return "Only PDF and DOCX files are accepted.";
   return null;
 }
+
+export const projectSchema = z.object({
+  title: z.string().trim().min(3).max(160),
+  department: z.string().trim().min(2).max(100),
+  roleType: z.string().trim().min(2).max(100),
+  workSetting: z.enum(settings),
+  location: z.string().trim().min(2).max(160),
+  remote: z.boolean(),
+  summary: z.string().trim().min(10).max(500),
+  description: z.string().trim().min(20).max(15000),
+  requirements: z.string().trim().min(5).max(8000),
+  isActive: z.boolean(),
+});

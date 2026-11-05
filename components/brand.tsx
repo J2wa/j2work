@@ -6,10 +6,8 @@ export function Brand({ light = false }: { light?: boolean }) {
       className={`brand ${light ? "text-white" : ""}`}
       aria-label="ACES Intelligence careers home"
     >
-      <span className="brand-mark" aria-hidden="true">
-        <span />
-        <span />
-        <span />
+      <span className="brand-logo" aria-hidden="true">
+        <img src="/aces-logo.jpg" alt="" />
       </span>
       <span>
         <strong>ACES</strong>
@@ -56,7 +54,8 @@ export function Footer() {
         </p>
         <div className="flex gap-6 text-xs">
           <Link href="/privacy">Applicant privacy</Link>
-          <a href="https://acesintelligence.xyz/inquiry">Get in touch ↗</a>
+          <a href="mailto:acesintelligenceph@gmail.com">Get in touch ↗</a>
+          <Link href="/admin">Admin</Link>
         </div>
       </div>
     </footer>

@@ -1,8 +1,12 @@
+import {
+  applicationEmailPayload,
+  sendApplicationEmail,
+} from "@/lib/application-email";
 import { NextRequest } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { applications, jobs, user } from "@/lib/db/schema";
+import { applications, applicationEmails, jobs, user } from "@/lib/db/schema";
 import { applicationSchema } from "@/lib/validation";
 import { sameOrigin, fail, serviceError } from "@/lib/http";
 export async function POST(request: NextRequest) {
@@ -47,9 +51,27 @@ export async function POST(request: NextRequest) {
           error: "You have already applied for this role.",
           status: 409,
         };
+      await tx
+        .insert(applicationEmails)
+        .values({
+          applicationId: inserted[0].id,
+          payload: applicationEmailPayload({
+            id: inserted[0].id,
+            name: applicant.name,
+            email: applicant.email,
+            phone: applicant.phone,
+            title: job.title,
+            note: parsed.data.coverNote,
+          }),
+        });
       return { id: inserted[0].id };
     });
     if ("error" in result) return fail(result.error!, result.status);
+    try {
+      await sendApplicationEmail(result.id!);
+    } catch {
+      console.error("Application saved; notification pending");
+    }
     return Response.json(result, { status: 201 });
   } catch (error) {
     return serviceError(error);

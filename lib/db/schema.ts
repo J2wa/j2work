@@ -164,3 +164,13 @@ export const jobRelations = relations(jobs, ({ many }) => ({
   applications: many(applications),
 }));
 export type Job = typeof jobs.$inferSelect;
+
+export const applicationEmails = sqliteTable("application_emails", {
+  applicationId: text("application_id")
+    .primaryKey()
+    .references(() => applications.id, { onDelete: "cascade" }),
+  payload: text("payload").notNull(),
+  sentAt: time("sent_at"),
+  lastAttemptAt: time("last_attempt_at"),
+  error: text("error"),
+});
