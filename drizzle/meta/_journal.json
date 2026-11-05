@@ -8,6 +8,13 @@
       "when": 1793768326773,
       "tag": "0000_green_adam_warlock",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1793872870612,
+      "tag": "0001_curly_karen_page",
+      "breakpoints": true
     }
   ]
 }

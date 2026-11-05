@@ -1,45 +1,42 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
-  AudioLines,
+  ArrowRight,
   ScanEye,
+  AudioLines,
   Layers3,
   Workflow,
-  ArrowRight,
-  Check,
+  CheckCircle2,
 } from "lucide-react";
 import { PublicHeader, Footer } from "@/components/brand";
 const tracks = [
   {
-    number: "01",
     icon: ScanEye,
-    title: "Multimodal annotation",
-    description: "Turn video, images, and audio into meaningful training data.",
-    tags: "Video · Image · Audio",
-  },
-  {
-    number: "02",
-    icon: AudioLines,
-    title: "AI model evaluation",
+    title: "Video & image annotation",
     description:
-      "Bring human judgment to language, reasoning, and model quality.",
-    tags: "RLHF · SFT · Multilingual",
+      "Give AI a clearer view of the world. Turn visual details into meaningful training data.",
+    tags: "Computer vision · Data labeling",
   },
   {
-    number: "03",
+    icon: AudioLines,
+    title: "Language & AI evaluation",
+    description:
+      "Bring your perspective to language, reasoning, and the quality of AI responses.",
+    tags: "Model evaluation · Multilingual",
+  },
+  {
     icon: Layers3,
     title: "Quality & operations",
     description:
-      "Build consistency through careful reviews and thoughtful team support.",
-    tags: "Quality assurance · Delivery",
+      "Make every detail count through careful reviews, team support, and consistent delivery.",
+    tags: "Quality assurance · Operations",
   },
   {
-    number: "04",
     icon: Workflow,
-    title: "Agentic AI & engineering",
+    title: "Engineering & automation",
     description:
-      "Create practical AI tools and workflows that help people work better.",
-    tags: "AI agents · Automation",
+      "Build practical tools and intelligent workflows that help people do their best work.",
+    tags: "AI tools · Software engineering",
   },
 ];
 export default function Home() {
@@ -47,91 +44,110 @@ export default function Home() {
     <>
       <PublicHeader />
       <main id="main">
-        <section className="shell hero">
-          <div className="hero-copy">
-            <div className="eyebrow">
-              <span className="orange-dot" /> PEOPLE BEHIND THE INTELLIGENCE
-            </div>
-            <h1>
-              Your expertise.
-              <br />
-              The next
-              <br />
-              <span className="text-accent">chapter of AI.</span>
-            </h1>
-            <p className="hero-description">
-              Great AI starts with people like you. Bring your perspective, grow
-              your skills, and do work that makes a difference.
-            </p>
-            <div className="flex flex-wrap items-center gap-5">
-              <Link href="/signup" className="button accent">
-                Create your profile <ArrowUpRight size={19} />
-              </Link>
-              <Link href="/careers" className="text-link">
-                Explore opportunities <ArrowRight size={17} />
-              </Link>
-            </div>
-            <div className="hero-footnote">
-              <span className="mini-check">
-                <Check size={12} />
-              </span>{" "}
-              One profile. A world of possibilities.
-            </div>
-          </div>
-          <div className="hero-art" aria-hidden="true">
-            <div className="art-top">
-              <span>ACES / HUMAN POTENTIAL</span>
-              <span>↗</span>
-            </div>
-            <div className="arrow-sculpture">
-              <span />
-              <span />
-              <span />
-            </div>
-            <div className="art-bottom">
-              <span>
-                MADE OF
+        <section className="new-hero">
+          <div className="shell hero-layout">
+            <div className="hero-message">
+              <div className="eyebrow">
+                <span className="blue-dot" /> CAREERS AT ACES INTELLIGENCE
+              </div>
+              <h1>
+                Human talent.
                 <br />
-                <b>HUMAN INSIGHT.</b>
-              </span>
-              <span className="art-circle">AI</span>
+                Extraordinary
+                <br />
+                <span>possibilities.</span>
+              </h1>
+              <p>
+                Help shape the next generation of AI. Bring your curiosity, your
+                attention to detail, and your unique perspective. We’ll build
+                what comes next, together.
+              </p>
+              <div className="hero-buttons">
+                <Link className="button accent" href="/signup">
+                  Start your application <ArrowUpRight size={19} />
+                </Link>
+                <Link className="text-link" href="/careers">
+                  Explore projects <ArrowRight size={17} />
+                </Link>
+              </div>
+              <div className="hero-trust">
+                <CheckCircle2 size={16} /> One profile. Your next opportunity.
+              </div>
             </div>
-            <div className="art-caption">YOUR NEXT CHAPTER STARTS HERE</div>
+            <div className="talent-visual" aria-hidden="true">
+              <div className="visual-top">
+                <span>THE FUTURE IS HUMAN</span>
+                <span>↗</span>
+              </div>
+              <div className="visual-orbit orbit-one" />
+              <div className="visual-orbit orbit-two" />
+              <div className="visual-monogram">
+                <span className="hero-logo">
+                  <img src="/aces-logo.jpg" alt="" />
+                </span>
+              </div>
+              <div className="visual-label label-top">
+                <ScanEye size={19} />
+                <div>
+                  Precision in every detail<small>DATA & ANNOTATION</small>
+                </div>
+              </div>
+              <div className="visual-label label-bottom">
+                <Workflow size={19} />
+                <div>
+                  Ideas into impact<small>PEOPLE & TECHNOLOGY</small>
+                </div>
+              </div>
+              <div className="visual-bottom">
+                <span>
+                  YOUR PERSPECTIVE.
+                  <br />
+                  <b>OUR NEXT BREAKTHROUGH.</b>
+                </span>
+                <span className="visual-star">✳</span>
+              </div>
+            </div>
           </div>
         </section>
-        <section className="opportunity-strip">
-          <div className="shell flex flex-wrap justify-between gap-5">
-            <span>Built around your strengths.</span>
-            <div className="flex flex-wrap gap-7 text-sm">
-              <span>Full-time</span>
-              <span>Part-time</span>
-              <span>Project-based</span>
-              <span className="text-accent">One team. Many paths. ↗</span>
-            </div>
+        <section className="work-strip">
+          <div className="shell">
+            <span>FIND YOUR WAY TO WORK</span>
+            <strong>Full-time</strong>
+            <span className="strip-dot">•</span>
+            <strong>Part-time</strong>
+            <span className="strip-dot">•</span>
+            <strong>Project-based</strong>
+            <a href="#how-it-works">
+              A simple start <ArrowRight size={16} />
+            </a>
           </div>
         </section>
         <section className="shell section-space" id="our-work">
           <div className="section-heading">
             <div>
-              <div className="eyebrow">FIND YOUR DIRECTION</div>
+              <div className="eyebrow">WORK THAT MOVES AI FORWARD</div>
               <h2>
-                Different skills.
+                Find where you
                 <br />
-                Shared ambition.
+                make a difference.
               </h2>
             </div>
             <p>
-              From the detail-oriented to the technically curious,
-              <br className="hidden sm:block" /> there’s more than one way to
-              help shape better AI.
+              Different strengths. A shared purpose.
+              <br />
+              Explore the areas where human expertise
+              <br />
+              makes technology better.
             </p>
           </div>
-          <div className="track-grid">
-            {tracks.map((t) => (
-              <article className="track-card" key={t.number}>
-                <div className="flex items-center justify-between">
-                  <t.icon size={25} strokeWidth={1.5} />
-                  <span className="mono text-muted">{t.number}</span>
+          <div className="new-track-grid">
+            {tracks.map((t, i) => (
+              <article className="new-track" key={t.title}>
+                <div className="track-top">
+                  <span className="track-icon">
+                    <t.icon size={25} />
+                  </span>
+                  <span>0{i + 1}</span>
                 </div>
                 <h3>{t.title}</h3>
                 <p>{t.description}</p>
@@ -139,70 +155,65 @@ export default function Home() {
               </article>
             ))}
           </div>
-          <p className="mt-5 text-xs text-muted">
-            Our areas of work. Current vacancies are listed inside the careers
-            portal.
+          <p className="field-help mt-5">
+            These are our areas of work. Available projects are listed in the
+            careers portal.
           </p>
         </section>
-        <section className="journey-section">
-          <div className="shell journey">
-            <div>
-              <div className="eyebrow">A SIMPLE START</div>
-              <h2>
-                Less paperwork.
-                <br />
-                More possibility.
-              </h2>
-              <Link href="/signup" className="text-link mt-7">
+        <section className="process-section" id="how-it-works">
+          <div className="shell">
+            <div className="section-heading">
+              <div>
+                <div className="eyebrow">YOUR NEXT CHAPTER, IN THREE STEPS</div>
+                <h2>
+                  A little about you.
+                  <br />A world of possibility.
+                </h2>
+              </div>
+              <Link href="/signup" className="button">
                 Let’s get started <ArrowUpRight size={18} />
               </Link>
             </div>
-            <div className="journey-steps">
+            <div className="process-grid">
               {[
                 [
                   "01",
-                  "Tell us about yourself",
-                  "Create a profile and share how you prefer to work.",
+                  "Create your profile",
+                  "Tell us about yourself and how you prefer to work. Choose full-time, part-time, or project-based opportunities.",
                 ],
                 [
                   "02",
-                  "Bring your experience",
-                  "Upload your resume once. Keep it ready for your next opportunity.",
+                  "Share your experience",
+                  "Upload your resume and keep your details ready for the projects that interest you.",
                 ],
                 [
                   "03",
-                  "Find your next role",
-                  "Explore openings, apply in one click, and follow your application.",
+                  "Make your next move",
+                  "Explore available projects, send your application, and follow its progress from your dashboard.",
                 ],
               ].map(([n, t, d]) => (
-                <div className="journey-step" key={n}>
-                  <span className="step-number">{n}</span>
-                  <div>
-                    <h3>{t}</h3>
-                    <p>{d}</p>
-                  </div>
-                </div>
+                <article key={n}>
+                  <span>{n}</span>
+                  <h3>{t}</h3>
+                  <p>{d}</p>
+                </article>
               ))}
             </div>
           </div>
         </section>
         <section className="shell section-space">
-          <div className="talent-banner">
+          <div className="new-cta">
             <div>
-              <div className="eyebrow">STAY IN THE LOOP</div>
+              <div className="eyebrow">BRING YOUR POTENTIAL</div>
               <h2>
-                Your next opportunity
+                Great AI starts
                 <br />
-                could be just ahead.
+                with people like you.
               </h2>
-              <p>
-                Join our talent pool to hear about future projects,
-                <br className="hidden sm:block" /> short-term contracts, and
-                long-term opportunities.
-              </p>
+              <p>Your skills have a place in what comes next.</p>
             </div>
-            <Link href="/signup" className="button white">
-              Join our talent pool <ArrowUpRight size={20} />
+            <Link className="button white" href="/signup">
+              Join the ACES talent pool <ArrowUpRight size={20} />
             </Link>
           </div>
         </section>

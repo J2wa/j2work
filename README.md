@@ -51,7 +51,7 @@ For local data, use `TURSO_DATABASE_URL=file:./careers.db`. Production explicitl
 
 No vacancies are automatically published. Optional `npm run db:seed` creates three **inactive** templates. Edit the job descriptions, requirements, location, role type, work setting, and terms in Turso's SQL editor, then set `is_active=1` for genuine vacancies. `requirements` contains one requirement per line. Use UUIDs or stable slug IDs for new jobs. Close a vacancy with `is_active=0`; applicants can still view roles they applied to.
 
-Authorized hiring staff can update an application's `status` in the database: `submitted`, `reviewing`, `shortlisted`, `hired`, or `not_selected`. This version is an applicant portal; a recruiter administration interface is not included. Talent-pool opt-in records consent only; it does not send emails or create a campaign.
+Authorized hiring staff can update an application's `status` in the database: `submitted`, `reviewing`, `shortlisted`, `hired`, or `not_selected`. The protected `/admin` dashboard now supports creating/editing/publishing/closing projects, reviewing applicants, downloading submitted resumes, updating application status, and retrying pending notification emails. See [SETUP.md](SETUP.md) for admin account approval and Resend configuration. Talent-pool opt-in records consent only; it does not create a campaign. Project applications queue a transactional notification to acesintelligenceph@gmail.com through Resend.
 
 Before a hiring campaign, confirm the applicant notice and establish a retention/deletion process. Delete expired abandoned uploads and obsolete resumes on an operational schedule, preserving any referenced by existing applications. Password recovery and email verification delivery are not configured; the UI directs account-access problems to ACES support.
 
@@ -65,3 +65,7 @@ npm run test:integration
 ```
 
 Integration tests start a production Next.js server on port 3198 against an isolated temporary libSQL database. They check signup/login/logout, authentication redirects, incomplete-profile gating, injected resume URL rejection, cross-origin protection, concurrent duplicate applications, ownership, and consent updates. The upload is represented by an explicitly documented local fixture; it does not claim to test external Blob connectivity.
+
+## Branding and hiring administration
+
+The public site uses the supplied ACES logo and a responsive blue-and-white design. See [SETUP.md](SETUP.md) for the required `ADMIN_USER_IDS`, `RESEND_API_KEY`, and `RESEND_FROM_EMAIL` configuration and delivery verification steps.

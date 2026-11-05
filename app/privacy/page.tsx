@@ -31,7 +31,10 @@ export default function Page() {
           The portal uses Turso for account and application records, and private
           Vercel Blob storage for resumes. Resume downloads require
           authenticated access. Hosting and storage providers process
-          information to operate the service.
+          information to operate the service. Application notifications
+          containing your name, contact details, project, and cover note are
+          sent through Resend to the ACES hiring inbox. Resumes remain in
+          private storage and are accessed by authorized hiring staff.
         </p>
         <h2>Your choices</h2>
         <p>
