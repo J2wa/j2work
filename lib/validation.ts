@@ -45,3 +45,38 @@ export function resumeError(
     return "Only PDF and DOCX files are accepted.";
   return null;
 }
+
+export const applicationStatuses = [
+  "submitted",
+  "reviewing",
+  "shortlisted",
+  "hired",
+  "not_selected",
+] as const;
+export const statusLabels: Record<
+  (typeof applicationStatuses)[number],
+  string
+> = {
+  submitted: "Submitted",
+  reviewing: "Under review",
+  shortlisted: "Shortlisted",
+  hired: "Hired",
+  not_selected: "Not selected",
+};
+export const statusSchema = z
+  .object({ status: z.enum(applicationStatuses) })
+  .strict();
+export const jobSchema = z
+  .object({
+    title: z.string().trim().min(2).max(160),
+    department: z.string().trim().min(1).max(120),
+    roleType: z.string().trim().min(1).max(120),
+    workSetting: z.enum(settings),
+    location: z.string().trim().min(1).max(160),
+    remote: z.boolean(),
+    summary: z.string().trim().min(1).max(500),
+    description: z.string().trim().min(1).max(15000),
+    requirements: z.string().trim().min(1).max(10000),
+    isActive: z.boolean(),
+  })
+  .strict();

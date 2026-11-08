@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, eq } from "drizzle-orm";
 import { ArrowLeft, MapPin, BriefcaseBusiness, Clock3 } from "lucide-react";
-import { requireApplicant } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { applications, jobs } from "@/lib/db/schema";
 import { ApplyForm } from "@/components/apply-form";
@@ -12,17 +12,22 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const applicant = await requireApplicant();
+  const session = await getSession();
+  const applicant = session?.user;
   const [job, application] = await Promise.all([
-    db().query.jobs.findFirst({ where: eq(jobs.id, id) }),
-    db().query.applications.findFirst({
-      where: and(
-        eq(applications.jobId, id),
-        eq(applications.applicantId, applicant.id),
-      ),
+    db().query.jobs.findFirst({
+      where: and(eq(jobs.id, id), eq(jobs.isActive, true)),
     }),
+    applicant
+      ? db().query.applications.findFirst({
+          where: and(
+            eq(applications.jobId, id),
+            eq(applications.applicantId, applicant.id),
+          ),
+        })
+      : Promise.resolve(undefined),
   ]);
-  if (!job || (!job.isActive && !application)) notFound();
+  if (!job) notFound();
   return (
     <>
       <Link className="text-link text-sm mb-8" href="/careers">
@@ -73,11 +78,26 @@ export default async function Page({
             </p>
           </div>
         </article>
-        <ApplyForm
-          jobId={id}
-          applied={Boolean(application)}
-          resumeName={applicant.resumeName || "Your saved resume"}
-        />
+        {applicant?.resumeUrl ? (
+          <ApplyForm
+            jobId={id}
+            applied={Boolean(application)}
+            resumeName={applicant.resumeName || "Your saved resume"}
+          />
+        ) : (
+          <aside className="apply-panel">
+            <h2>Apply for this role</h2>
+            <p>
+              Sign in and upload your resume to apply with your saved profile.
+            </p>
+            <Link
+              href={applicant ? "/onboarding" : "/login"}
+              className="button"
+            >
+              {applicant ? "Upload resume" : "Log in to apply"}
+            </Link>
+          </aside>
+        )}
       </div>
     </>
   );

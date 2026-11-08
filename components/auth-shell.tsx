@@ -53,9 +53,6 @@ export function AuthShell({
               </div>
             ))}
           </div>
-          <div className="aside-graphic" aria-hidden="true">
-            a<span>↗</span>
-          </div>
           <div className="mono text-xs text-muted">
             HUMAN EXPERTISE. BETTER AI.
           </div>

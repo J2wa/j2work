@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { admin } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
 import { cache } from "react";
@@ -48,7 +49,10 @@ function createAuth() {
         resumeName: { type: "string", required: false, input: false },
       },
     },
-    plugins: [nextCookies()],
+    plugins: [
+      admin({ defaultRole: "user", adminRoles: ["admin"] }),
+      nextCookies(),
+    ],
   });
 }
 export function auth() {

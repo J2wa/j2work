@@ -1,10 +1,11 @@
-import { NextRequest } from "next/server";
+import { after, NextRequest } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { applications, jobs, user } from "@/lib/db/schema";
+import { applications, jobs, user, applicationEmails } from "@/lib/db/schema";
 import { applicationSchema } from "@/lib/validation";
 import { sameOrigin, fail, serviceError } from "@/lib/http";
+import { deliverApplicationEmail } from "@/lib/email";
 export async function POST(request: NextRequest) {
   try {
     if (!sameOrigin(request)) return fail("Invalid origin.", 403);
@@ -47,9 +48,13 @@ export async function POST(request: NextRequest) {
           error: "You have already applied for this role.",
           status: 409,
         };
+      await tx
+        .insert(applicationEmails)
+        .values({ applicationId: inserted[0].id });
       return { id: inserted[0].id };
     });
     if ("error" in result) return fail(result.error!, result.status);
+    after(() => deliverApplicationEmail(result.id!));
     return Response.json(result, { status: 201 });
   } catch (error) {
     return serviceError(error);

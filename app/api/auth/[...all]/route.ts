@@ -2,9 +2,15 @@ import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { signupSchema, loginSchema } from "@/lib/validation";
 import { fail, serviceError } from "@/lib/http";
+import { adminAccess } from "@/lib/admin";
+import { sameOrigin } from "@/lib/http";
 export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
   try {
+    if (request.nextUrl.pathname.startsWith("/api/auth/admin/")) {
+      const access = await adminAccess();
+      if (access.error) return access.error;
+    }
     return await auth().handler(request);
   } catch (error) {
     return serviceError(error);
@@ -13,6 +19,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const path = request.nextUrl.pathname;
+    if (path.startsWith("/api/auth/admin/") && !sameOrigin(request))
+      return fail("Invalid origin.", 403);
     if (path.endsWith("/update-user"))
       return fail("Use the profile settings page.", 403);
     if (path.endsWith("/sign-up/email") || path.endsWith("/sign-in/email")) {
@@ -34,6 +42,10 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({ ...body, ...result.data }),
       });
       return await auth().handler(normalized);
+    }
+    if (request.nextUrl.pathname.startsWith("/api/auth/admin/")) {
+      const access = await adminAccess();
+      if (access.error) return access.error;
     }
     return await auth().handler(request);
   } catch (error) {

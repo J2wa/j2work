@@ -19,6 +19,10 @@ export const user = sqliteTable(
       .notNull()
       .default(false),
     image: text("image"),
+    role: text("role").notNull().default("user"),
+    banned: integer("banned", { mode: "boolean" }).notNull().default(false),
+    banReason: text("ban_reason"),
+    banExpires: time("ban_expires"),
     phone: text("phone").notNull().default(""),
     preferredWorkSetting: text("preferred_work_setting", {
       enum: settings,
@@ -52,6 +56,7 @@ export const session = sqliteTable(
     updatedAt: time("updated_at").notNull(),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
+    impersonatedBy: text("impersonated_by"),
   },
   (t) => [index("session_user_idx").on(t.userId)],
 );
@@ -164,3 +169,22 @@ export const jobRelations = relations(jobs, ({ many }) => ({
   applications: many(applications),
 }));
 export type Job = typeof jobs.$inferSelect;
+
+// One durable recruitment notification per successfully stored application.
+export const applicationEmails = sqliteTable("application_emails", {
+  applicationId: text("application_id")
+    .primaryKey()
+    .references(() => applications.id, { onDelete: "cascade" }),
+  state: text("state", {
+    enum: ["pending", "sending", "sent", "failed", "needs_review"],
+  })
+    .notNull()
+    .default("pending"),
+  payload: text("payload"),
+  attempts: integer("attempts").notNull().default(0),
+  firstAttemptAt: time("first_attempt_at"),
+  lastAttemptAt: time("last_attempt_at"),
+  sentAt: time("sent_at"),
+  providerId: text("provider_id"),
+  errorCode: text("error_code"),
+});

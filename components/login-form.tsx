@@ -33,7 +33,7 @@ export function LoginForm() {
           response.error.message || "Check your email and password.",
         );
       toast.success("Welcome back.");
-      router.push("/careers");
+      router.push(response.data?.user.role === "admin" ? "/admin" : "/careers");
       router.refresh();
     } catch (error) {
       const message =
