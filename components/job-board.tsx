@@ -7,16 +7,20 @@ import {
   ArrowUpRight,
   MapPin,
   BriefcaseBusiness,
-  ArrowRight,
 } from "lucide-react";
 import type { Job } from "@/lib/db/schema";
+import { ApplyButton } from "./apply-button";
 import { settings } from "@/lib/validation";
 export function JobBoard({
   jobs,
   appliedIds,
+  signedIn,
+  resumeReady,
 }: {
   jobs: Job[];
   appliedIds: string[];
+  signedIn: boolean;
+  resumeReady: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [department, setDepartment] = useState("");
@@ -137,13 +141,13 @@ export function JobBoard({
               </div>
               <p>{job.summary}</p>
               <div className="job-card-bottom">
-                {appliedIds.includes(job.id) ? (
-                  <span className="status-badge">Application submitted</span>
-                ) : (
-                  <span className="text-xs text-muted">
-                    Bring your perspective.
-                  </span>
-                )}
+                <ApplyButton
+                  jobId={job.id}
+                  title={job.title}
+                  applied={appliedIds.includes(job.id)}
+                  signedIn={signedIn}
+                  resumeReady={resumeReady}
+                />
                 <Link
                   href={`/careers/jobs/${job.id}`}
                   className="text-link"
@@ -163,22 +167,18 @@ export function JobBoard({
           <h3>
             {hasFilters
               ? "No matches just yet."
-              : "Your next opportunity is on its way."}
+              : "No open positions right now."}
           </h3>
           <p>
             {hasFilters
               ? "Try a different keyword or clear your filters to see all open roles."
-              : "There are no open roles at the moment. Keep your profile ready and opt into the talent pool for future opportunities."}
+              : "Please check back soon for new opportunities."}
           </p>
           {hasFilters ? (
             <button className="button secondary" onClick={clear}>
               Clear all filters
             </button>
-          ) : (
-            <Link href="/careers/profile" className="text-link">
-              Update your preferences <ArrowRight size={17} />
-            </Link>
-          )}
+          ) : null}
         </div>
       )}
     </>

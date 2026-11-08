@@ -1,36 +1,45 @@
+import Link from "next/link";
 import { Brand, Footer } from "@/components/brand";
 import { PortalNav } from "@/components/portal-nav";
-import { requireApplicant } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 export const dynamic = "force-dynamic";
-export const metadata = { robots: { index: false, follow: false } };
 export default async function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const applicant = await requireApplicant();
+  const session = await getSession();
   return (
     <>
       <header className="site-header">
-        <div className="shell flex justify-between items-center gap-4">
+        <div className="shell header-row">
           <Brand />
-          <div className="applicant-badge">
-            <span>
-              {applicant.name
-                .split(" ")
-                .map((x) => x[0])
-                .slice(0, 2)
-                .join("")}
-            </span>
-            <div>
-              <strong>{applicant.name}</strong>
-              <small>Applicant portal</small>
-            </div>
+          <div className="header-actions">
+            {session?.user.role === "admin" && (
+              <Link href="/admin" className="text-link">
+                Admin dashboard
+              </Link>
+            )}
+            <Link
+              href={session ? "/careers/profile" : "/login"}
+              className="text-link"
+            >
+              {session ? "My profile" : "Log in"}
+            </Link>
           </div>
         </div>
       </header>
       <div className="shell">
-        <PortalNav />
+        {session ? (
+          <PortalNav />
+        ) : (
+          <nav className="portal-nav" aria-label="Careers navigation">
+            <Link href="/careers" className="active">
+              Careers
+            </Link>
+            <Link href="/signup">Create account</Link>
+          </nav>
+        )}
       </div>
       <main id="main" className="shell portal-main">
         {children}

@@ -18,6 +18,7 @@ export default async function Page() {
     .select({
       id: applications.id,
       jobId: jobs.id,
+      isActive: jobs.isActive,
       title: jobs.title,
       department: jobs.department,
       status: applications.status,
@@ -63,7 +64,11 @@ export default async function Page() {
               <div>
                 <div className="eyebrow">{a.department}</div>
                 <h2>
-                  <Link href={`/careers/jobs/${a.jobId}`}>{a.title}</Link>
+                  {a.isActive ? (
+                    <Link href={`/careers/jobs/${a.jobId}`}>{a.title}</Link>
+                  ) : (
+                    a.title
+                  )}
                 </h2>
                 <p>
                   Applied{" "}
@@ -83,12 +88,16 @@ export default async function Page() {
                 <span className={`status-badge ${a.status}`}>
                   {labels[a.status]}
                 </span>
-                <Link
-                  aria-label={`View ${a.title}`}
-                  href={`/careers/jobs/${a.jobId}`}
-                >
-                  <ArrowUpRight size={21} />
-                </Link>
+                {a.isActive ? (
+                  <Link
+                    aria-label={`View ${a.title}`}
+                    href={`/careers/jobs/${a.jobId}`}
+                  >
+                    <ArrowUpRight size={21} />
+                  </Link>
+                ) : (
+                  <span className="text-xs text-muted">Position closed</span>
+                )}
               </div>
             </article>
           ))}
