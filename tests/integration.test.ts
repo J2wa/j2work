@@ -141,6 +141,9 @@ test(
       );
       const anonymousAdmin = await post("/api/admin/jobs", {});
       assert.equal(anonymousAdmin.status, 401);
+      assert.equal((await post("/api/admin/job-images", {})).status, 401);
+      assert.equal((await post("/api/admin/job-images", {}, cookie)).status, 403);
+      assert.equal((await fetch(origin + "/api/job-images/resume.pdf")).status, 404);
       assert.equal((await post("/api/admin/jobs", {}, cookie)).status, 403);
       assert.equal(
         (
@@ -367,6 +370,9 @@ test(
       });
       assert.equal(adminPage.status, 200);
       assert.match(await adminPage.text(), /Dashboard/);
+      const invalidImage = new FormData();
+      invalidImage.append("image", new Blob(["not a real image"], { type: "image/png" }), "fake.png");
+      assert.equal((await fetch(origin + "/api/admin/job-images", { method: "POST", headers: { Cookie: cookie, Origin: origin }, body: invalidImage })).status, 400);
       const jobInput = {
         hourlyRatePhpCents: 25050,
         hourlyRateUsdCents: 500,
