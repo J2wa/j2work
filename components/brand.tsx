@@ -6,11 +6,9 @@ export function Brand({ light = false }: { light?: boolean }) {
       className={`brand ${light ? "text-white" : ""}`}
       aria-label="ACES Intelligence careers home"
     >
-      <span className="brand-mark" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </span>
+      <svg className="brand-logo" viewBox="335 319 610 466" aria-hidden="true">
+        <image href="/aces-logo.png" width="1280" height="1280" />
+      </svg>
       <span>
         <strong>ACES</strong>
         <small>INTELLIGENCE</small>
@@ -23,7 +21,7 @@ export function Brand({ light = false }: { light?: boolean }) {
 export function PublicHeader() {
   return (
     <header className="site-header">
-      <div className="shell flex items-center justify-between gap-4">
+      <div className="shell header-row">
         <Brand />
         <nav
           aria-label="Main navigation"
