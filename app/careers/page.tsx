@@ -23,8 +23,11 @@ export default async function Page() {
   ]);
   return (
     <>
-      <div className="portal-welcome">
+      <div className="portal-welcome careers-heading">
         <div>
+          <span className="eyebrow text-accent">
+            GROW WITH ACES INTELLIGENCE
+          </span>
           <h1>Explore Career Opportunities</h1>
           <p>Find your next opportunity with ACES Intelligence.</p>
         </div>

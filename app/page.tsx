@@ -1,12 +1,32 @@
 import Link from "next/link";
 import { BriefcaseBusiness, FileText, CheckCircle2 } from "lucide-react";
 import { PublicHeader, Footer } from "@/components/brand";
-export default function Home() {
+import { eq, desc } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { jobs, applications } from "@/lib/db/schema";
+import { getSession } from "@/lib/auth";
+import { JobCarousel } from "@/components/job-carousel";
+export const dynamic = "force-dynamic";
+export default async function Home() {
+  const session = await getSession();
+  const roles = process.env.TURSO_DATABASE_URL
+    ? await db()
+        .select()
+        .from(jobs)
+        .where(eq(jobs.isActive, true))
+        .orderBy(desc(jobs.createdAt))
+    : [];
+  const submitted = session
+    ? await db()
+        .select({ jobId: applications.jobId })
+        .from(applications)
+        .where(eq(applications.applicantId, session.user.id))
+    : [];
   return (
     <>
       <PublicHeader />
       <main id="main">
-        <section className="shell landing-intro">
+        <section className="shell landing-intro home-intro">
           <div className="eyebrow">CAREERS AT ACES INTELLIGENCE</div>
           <h1>
             Bring your expertise.
@@ -26,6 +46,17 @@ export default function Home() {
             </Link>
           </div>
         </section>
+        <div className="shell home-opportunities">
+          <JobCarousel
+            jobs={roles}
+            appliedIds={submitted.map((a) => a.jobId)}
+            signedIn={Boolean(session)}
+            resumeReady={Boolean(session?.user.resumeUrl)}
+          />
+          <Link className="text-link all-opportunities" href="/careers">
+            Browse all opportunities →
+          </Link>
+        </div>
         <section className="shell landing-steps" aria-labelledby="how-it-works">
           <h2 id="how-it-works">A simple way to apply</h2>
           <div className="steps-grid">

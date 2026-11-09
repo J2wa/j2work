@@ -197,6 +197,7 @@ test(
       });
       assert.equal(dashboard.status, 200);
       assert.match(await dashboard.text(), /Test role/);
+      assert.match(await (await fetch(origin)).text(), /Test role/);
       const anonymous = await post("/api/applications", { jobId: "test-job" });
       assert.equal(anonymous.status, 401);
       const forged = await post(
@@ -466,6 +467,7 @@ test(
         isActive: false,
       });
       assert.equal(closed.status, 200);
+      assert.doesNotMatch(await (await fetch(origin)).text(), /Test role/);
       const closedDetails = await (
         await fetch(origin + "/careers/jobs/test-job", {
           headers: { Cookie: cookie },
