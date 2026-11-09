@@ -137,3 +137,5 @@ See [implementation notes](docs/recruitment-release.md) for the file list and ve
 Admins can enter optional PHP and USD hourly rates when creating or editing jobs. Either or both can be published; blank fields hide the rate. Values are independent, with no exchange-rate conversion. Rates support two decimal places and are stored as integer centavos/cents. Migration `0002_careless_cardiac.sql` adds two nullable columns; existing listings keep rates unset.
 
 Job headers accept an optional public HTTPS image URL in the admin form. They appear on cards and detail pages; empty or failed images are hidden. No upload service or image proxy is added.
+
+Header images can now be uploaded directly from Admin → Jobs (JPG/PNG/WebP, maximum 2 MiB). Uploads require an administrator and same-origin request, with byte-signature validation and upload limits. Existing private Blob storage is reused; only the separate job-headers namespace is publicly streamed. Removing/replacing a header updates the job when saved; original stored files are retained. No database migration is needed for this update.

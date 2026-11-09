@@ -145,23 +145,65 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
               </label>
             ))}
           </div>
-          <label className="field">
-            Header image URL — optional
+          <div className="field">
+            <label htmlFor="job-header-upload">Header image — optional</label>
             <input
-              type="url"
-              placeholder="https://example.com/job-header.jpg"
-              maxLength={2048}
-              value={form.headerImageUrl ?? ""}
+              id="job-header-upload"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
               disabled={busy}
-              onChange={(e) =>
-                field("headerImageUrl", e.target.value.trim() || null)
-              }
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file) return;
+                if (file.size > 2 * 1024 * 1024) {
+                  setError("Choose an image up to 2 MB.");
+                  return;
+                }
+                setBusy(true);
+                setError("");
+                try {
+                  const body = new FormData();
+                  body.append("image", file);
+                  const response = await fetch("/api/admin/job-images", {
+                    method: "POST",
+                    body,
+                  });
+                  const result = await response.json();
+                  if (!response.ok)
+                    throw new Error(
+                      result.error || "Upload failed. Please try again.",
+                    );
+                  field("headerImageUrl", result.url);
+                  toast.success("Image uploaded. Save the job to publish it.");
+                } catch (error) {
+                  setError(
+                    error instanceof Error ? error.message : "Upload failed.",
+                  );
+                } finally {
+                  setBusy(false);
+                }
+              }}
             />
-            <span className="field-help">
-              Use a public HTTPS image link. A wide image works best. Leave
-              blank to remove it.
-            </span>
-          </label>
+            <p className="field-help">
+              JPG, PNG or WebP, up to 2 MB. A wide image works best. Save the
+              job after changing its image.
+            </p>
+            {busy && <p role="status">Please wait…</p>}
+            {form.headerImageUrl && (
+              <>
+                <JobHeaderImage url={form.headerImageUrl} />
+                <button
+                  type="button"
+                  className="button small secondary"
+                  disabled={busy}
+                  onClick={() => field("headerImageUrl", null)}
+                >
+                  Remove image
+                </button>
+              </>
+            )}
+          </div>
           <p className="field-help">
             Enter either or both currencies. Leave blank to hide a rate. Rates
             are entered independently; no automatic currency conversion.

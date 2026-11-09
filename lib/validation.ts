@@ -77,9 +77,15 @@ export const jobSchema = z
     headerImageUrl: z
       .string()
       .max(2048)
-      .url()
       .refine((value) => {
-        const url = new URL(value);
+        if (/^\/api\/job-images\/[a-f0-9-]{36}\.(jpg|png|webp)$/.test(value))
+          return true;
+        let url: URL;
+        try {
+          url = new URL(value);
+        } catch {
+          return false;
+        }
         return url.protocol === "https:" && !url.username && !url.password;
       }, "Use an HTTPS image URL without credentials.")
       .nullable()
