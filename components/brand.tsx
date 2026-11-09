@@ -31,13 +31,13 @@ export function PublicHeader() {
             className="hidden text-sm sm:inline"
             href="https://acesintelligence.xyz"
           >
-            Our company ↗
+            Our company
           </a>
           <Link className="text-sm font-semibold" href="/login">
             Log in
           </Link>
           <Link className="button small" href="/signup">
-            Join the team <span aria-hidden="true">↗</span>
+            Join the team
           </Link>
         </nav>
       </div>
@@ -54,7 +54,7 @@ export function Footer() {
         </p>
         <div className="flex gap-6 text-xs">
           <Link href="/privacy">Applicant privacy</Link>
-          <a href="https://acesintelligence.xyz/inquiry">Get in touch ↗</a>
+          <a href="https://acesintelligence.xyz/inquiry">Get in touch</a>
         </div>
       </div>
     </footer>

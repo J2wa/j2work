@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   CheckCircle2,
-  ArrowUpRight,
   LoaderCircle,
   FileText,
 } from "lucide-react";
@@ -63,8 +62,7 @@ export function ApplyForm({
             your portal.
           </p>
           <Link href="/careers/applications" className="button w-full">
-            View my applications <ArrowUpRight size={17} />
-          </Link>
+            View my applications </Link>
         </>
       ) : (
         <>
@@ -104,8 +102,7 @@ export function ApplyForm({
                 </>
               ) : (
                 <>
-                  Apply now <ArrowUpRight size={17} />
-                </>
+                  Apply now </>
               )}
             </button>
             <p className="text-xs text-muted mt-4">

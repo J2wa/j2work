@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Search,
   SlidersHorizontal,
-  ArrowUpRight,
   MapPin,
   BriefcaseBusiness,
 } from "lucide-react";
@@ -157,8 +156,7 @@ export function JobBoard({
                   className="text-link"
                   aria-label={`View ${job.title}`}
                 >
-                  View role <ArrowUpRight size={17} />
-                </Link>
+                  View role </Link>
               </div>
             </article>
           ))}

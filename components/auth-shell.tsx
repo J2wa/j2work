@@ -1,6 +1,6 @@
 import { Brand, Footer } from "./brand";
 import Link from "next/link";
-import { ArrowLeft, Check } from "lucide-react";
+import { Check } from "lucide-react";
 export function AuthShell({
   children,
   login = false,
@@ -13,7 +13,7 @@ export function AuthShell({
       <header className="shell auth-header">
         <Brand />
         <Link href="/" className="text-link text-sm">
-          <ArrowLeft size={15} /> Back to careers
+          Back to careers
         </Link>
       </header>
       <main id="main" className="shell auth-grid">

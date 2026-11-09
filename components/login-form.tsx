@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Field, PasswordField } from "./fields";
 import { authClient } from "@/lib/auth-client";
@@ -84,8 +84,7 @@ export function LoginForm() {
             </>
           ) : (
             <>
-              Log in <ArrowRight size={18} />
-            </>
+              Log in </>
           )}
         </button>
       </form>

@@ -39,7 +39,7 @@ export default async function Home() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link href="/careers" className="button">
-              Explore opportunities →
+              Explore opportunities
             </Link>
             <Link href="/signup" className="button secondary">
               Create your profile
@@ -54,7 +54,7 @@ export default async function Home() {
             resumeReady={Boolean(session?.user.resumeUrl)}
           />
           <Link className="text-link all-opportunities" href="/careers">
-            Browse all opportunities →
+            Browse all opportunities
           </Link>
         </div>
         <section className="shell landing-steps" aria-labelledby="how-it-works">

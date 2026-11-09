@@ -11,7 +11,7 @@ export function SetupNotice() {
         about upcoming opportunities.
       </p>
       <Link href="/" className="text-link mt-5">
-        Back to careers ↗
+        Back to careers
       </Link>
     </div>
   );
