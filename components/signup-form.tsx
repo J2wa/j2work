@@ -81,7 +81,8 @@ export function SignupForm() {
       await uploadResume(file, id, setProgress);
       setStage("Opening your portal…");
       toast.success("Your profile is ready. Welcome to ACES!");
-      router.push("/careers");
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(next?.startsWith("/careers/jobs/") && !next.includes("\\") && !next.includes("?") && !next.includes("#") ? next : "/careers");
       router.refresh();
     } catch (error) {
       const message =

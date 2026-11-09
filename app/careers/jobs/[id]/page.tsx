@@ -91,7 +91,7 @@ export default async function Page({
               Sign in and upload your resume to apply with your saved profile.
             </p>
             <Link
-              href={applicant ? "/onboarding" : "/login"}
+              href={applicant ? `/onboarding?next=${encodeURIComponent(`/careers/jobs/${id}`)}` : `/login?next=${encodeURIComponent(`/careers/jobs/${id}`)}`}
               className="button"
             >
               {applicant ? "Upload resume" : "Log in to apply"}

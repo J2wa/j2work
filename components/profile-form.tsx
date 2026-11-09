@@ -169,7 +169,10 @@ export function ResumeForm({
     try {
       await uploadResume(file, userId, setProgress);
       toast.success("Your resume is saved.");
-      if (onboarding) router.push("/careers");
+      if (onboarding) {
+        const next = new URLSearchParams(window.location.search).get("next");
+        router.push(next?.startsWith("/careers/jobs/") && !next.includes("\\") && !next.includes("?") && !next.includes("#") ? next : "/careers");
+      }
       router.refresh();
       setFile(null);
     } catch (e) {

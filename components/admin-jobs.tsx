@@ -208,6 +208,31 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
                 Edit
               </button>
               <button
+                type="button"
+                className="button small secondary"
+                disabled={busy}
+                onClick={() => {
+                  setEditing(null);
+                  setForm(jobSchema.parse({
+                    title: job.title + " (copy)",
+                    department: job.department,
+                    roleType: job.roleType,
+                    workSetting: job.workSetting,
+                    location: job.location,
+                    remote: job.remote,
+                    summary: job.summary,
+                    description: job.description,
+                    requirements: job.requirements,
+                    isActive: false,
+                  }));
+                  setShow(true);
+                  setError("");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                Duplicate
+              </button>
+              <button
                 className="button small secondary"
                 disabled={busy}
                 onClick={() => save(job.id, { isActive: !job.isActive })}

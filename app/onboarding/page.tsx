@@ -3,9 +3,11 @@ import { AuthShell } from "@/components/auth-shell";
 import { ResumeForm } from "@/components/profile-form";
 import { requireApplicant } from "@/lib/auth";
 export const dynamic = "force-dynamic";
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const applicant = await requireApplicant(false);
-  if (applicant.resumeUrl) redirect("/careers");
+  const next = (await searchParams).next;
+  const destination = next?.startsWith("/careers/jobs/") && !next.includes("\\") && !next.includes("?") && !next.includes("#") ? next : "/careers";
+  if (applicant.resumeUrl) redirect(destination);
   return (
     <AuthShell>
       <div className="eyebrow">ONE LAST STEP</div>

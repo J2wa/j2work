@@ -29,7 +29,7 @@ export function ApplyButton({
     return (
       <Link
         className="button small"
-        href={!signedIn ? "/login" : "/onboarding"}
+        href={!signedIn ? `/login?next=${encodeURIComponent(`/careers/jobs/${jobId}`)}` : `/onboarding?next=${encodeURIComponent(`/careers/jobs/${jobId}`)}`}
         aria-label={`Apply for ${title}`}
       >
         Apply

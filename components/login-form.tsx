@@ -33,7 +33,9 @@ export function LoginForm() {
           response.error.message || "Check your email and password.",
         );
       toast.success("Welcome back.");
-      router.push(response.data?.user.role === "admin" ? "/admin" : "/careers");
+      const next = new URLSearchParams(window.location.search).get("next");
+      const safeNext = next?.startsWith("/careers/jobs/") && !next.startsWith("//") && !next.includes("\\") && !next.includes("?") && !next.includes("#") ? next : "/careers";
+      router.push(response.data?.user.role === "admin" ? "/admin" : safeNext);
       router.refresh();
     } catch (error) {
       const message =
