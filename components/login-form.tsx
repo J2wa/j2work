@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -9,7 +9,6 @@ import { authClient } from "@/lib/auth-client";
 import { loginSchema } from "@/lib/validation";
 export function LoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,8 +33,8 @@ export function LoginForm() {
           response.error.message || "Check your email and password.",
         );
       toast.success("Welcome back.");
-      const next = searchParams.get("next");
-      const safeNext = next?.startsWith("/careers/") && !next.startsWith("//") && !next.includes("\\") ? next : "/careers";
+      const next = new URLSearchParams(window.location.search).get("next");
+      const safeNext = next?.startsWith("/careers/jobs/") && !next.startsWith("//") && !next.includes("\\") && !next.includes("?") && !next.includes("#") ? next : "/careers";
       router.push(response.data?.user.role === "admin" ? "/admin" : safeNext);
       router.refresh();
     } catch (error) {
