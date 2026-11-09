@@ -1,0 +1,1 @@
+ALTER TABLE `jobs` ADD `header_image_url` text;

@@ -15,6 +15,20 @@
       "when": 1794122971243,
       "tag": "0001_thick_kree",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794202632904,
+      "tag": "0002_careless_cardiac",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794202751961,
+      "tag": "0003_cool_deadpool",
+      "breakpoints": true
     }
   ]
 }

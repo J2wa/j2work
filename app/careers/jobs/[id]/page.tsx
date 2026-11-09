@@ -1,3 +1,5 @@
+import { JobHeaderImage } from "@/components/job-header-image";
+import { HourlyRates } from "@/components/hourly-rates";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, eq } from "drizzle-orm";
@@ -35,6 +37,7 @@ export default async function Page({
       </Link>
       <div className="role-layout">
         <article>
+          <JobHeaderImage url={job.headerImageUrl} />
           <div className="eyebrow text-accent">{job.department}</div>
           <h1 className="role-title">{job.title}</h1>
           <div className="job-meta role-meta">
@@ -57,6 +60,7 @@ export default async function Page({
               This role is no longer accepting applications.
             </p>
           ) : null}
+          <HourlyRates job={job} />
           <div className="role-copy">
             <h2>About the opportunity</h2>
             <p className="whitespace-pre-line">{job.description}</p>

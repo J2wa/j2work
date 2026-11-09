@@ -1380,3 +1380,5 @@ input[type="checkbox"] {
 .job-card > div:first-child {
   flex-wrap: wrap;
 }
+
+.job-header-image { display: block; width: 100%; aspect-ratio: 16 / 7; object-fit: cover; border-radius: 8px; margin-bottom: 20px; background: var(--soft-blue); }

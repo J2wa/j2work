@@ -1,4 +1,6 @@
 "use client";
+import { JobHeaderImage } from "@/components/job-header-image";
+import { HourlyRates } from "./hourly-rates";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -17,6 +19,9 @@ const empty: Input = {
   description: "",
   requirements: "",
   isActive: false,
+  headerImageUrl: null,
+  hourlyRatePhpCents: null,
+  hourlyRateUsdCents: null,
 };
 export function JobManagement({ jobs }: { jobs: Job[] }) {
   const [editing, setEditing] = useState<string | null>(null);
@@ -47,7 +52,7 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
       setBusy(false);
     }
   }
-  function field(name: keyof Input, value: string | boolean) {
+  function field(name: keyof Input, value: string | boolean | number | null) {
     setForm((f) => ({ ...f, [name]: value }));
   }
   return (
@@ -111,6 +116,56 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
               </select>
             </label>
           </div>
+          <div className="form-grid">
+            {(
+              [
+                ["hourlyRatePhpCents", "PHP"],
+                ["hourlyRateUsdCents", "USD"],
+              ] as const
+            ).map(([name, currency]) => (
+              <label className="field" key={name}>
+                Hourly rate ({currency}) — optional
+                <input
+                  type="number"
+                  min="0"
+                  max="1000000"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={form[name] == null ? "" : form[name] / 100}
+                  disabled={busy}
+                  onChange={(e) =>
+                    field(
+                      name,
+                      e.target.value === ""
+                        ? null
+                        : Math.round(Number(e.target.value) * 100),
+                    )
+                  }
+                />
+              </label>
+            ))}
+          </div>
+          <label className="field">
+            Header image URL — optional
+            <input
+              type="url"
+              placeholder="https://example.com/job-header.jpg"
+              maxLength={2048}
+              value={form.headerImageUrl ?? ""}
+              disabled={busy}
+              onChange={(e) =>
+                field("headerImageUrl", e.target.value.trim() || null)
+              }
+            />
+            <span className="field-help">
+              Use a public HTTPS image link. A wide image works best. Leave
+              blank to remove it.
+            </span>
+          </label>
+          <p className="field-help">
+            Enter either or both currencies. Leave blank to hide a rate. Rates
+            are entered independently; no automatic currency conversion.
+          </p>
           {(
             [
               ["summary", "Brief summary", 500],
@@ -171,12 +226,14 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
       <div className="job-grid">
         {jobs.map((job) => (
           <article className="job-card" key={job.id}>
+            <JobHeaderImage url={job.headerImageUrl} />
             <span
               className={`status-badge ${job.isActive ? "submitted" : "not_selected"}`}
             >
               {job.isActive ? "Active" : "Inactive"}
             </span>
             <h2 className="mt-4">{job.title}</h2>
+            <HourlyRates job={job} />
             <p>
               {job.department} · {job.workSetting} · {job.location}
             </p>
@@ -188,6 +245,9 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
                   setForm(
                     jobSchema.parse({
                       title: job.title,
+                      headerImageUrl: job.headerImageUrl,
+                      hourlyRatePhpCents: job.hourlyRatePhpCents,
+                      hourlyRateUsdCents: job.hourlyRateUsdCents,
                       department: job.department,
                       roleType: job.roleType,
                       workSetting: job.workSetting,

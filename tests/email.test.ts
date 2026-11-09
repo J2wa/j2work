@@ -60,7 +60,7 @@ test("Durable email delivery: config, deduplication, retries, payload stability 
         })
         .catch(async () => {
           await client.execute({
-            sql: "INSERT INTO jobs SELECT ?,title,department,role_type,work_setting,location,remote,summary,description,requirements,is_active,created_at FROM jobs WHERE id='j'",
+            sql: "INSERT INTO jobs (id,title,department,role_type,work_setting,location,remote,summary,description,requirements,is_active,created_at) SELECT ?,title,department,role_type,work_setting,location,remote,summary,description,requirements,is_active,created_at FROM jobs WHERE id='j'",
             args: ["j" + id],
           });
           await client.execute({

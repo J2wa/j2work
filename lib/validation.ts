@@ -74,6 +74,30 @@ export const jobSchema = z
     workSetting: z.enum(settings),
     location: z.string().trim().min(1).max(160),
     remote: z.boolean(),
+    headerImageUrl: z
+      .string()
+      .max(2048)
+      .url()
+      .refine((value) => {
+        const url = new URL(value);
+        return url.protocol === "https:" && !url.username && !url.password;
+      }, "Use an HTTPS image URL without credentials.")
+      .nullable()
+      .optional(),
+    hourlyRatePhpCents: z
+      .number()
+      .int()
+      .min(0)
+      .max(100000000)
+      .nullable()
+      .optional(),
+    hourlyRateUsdCents: z
+      .number()
+      .int()
+      .min(0)
+      .max(100000000)
+      .nullable()
+      .optional(),
     summary: z.string().trim().min(1).max(500),
     description: z.string().trim().min(1).max(15000),
     requirements: z.string().trim().min(1).max(10000),
