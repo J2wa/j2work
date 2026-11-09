@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BriefcaseBusiness, FileText, CheckCircle2 } from "lucide-react";
+import { BriefcaseBusiness, FileText, CheckCircle2, ArrowUpRight, ShieldCheck } from "lucide-react";
 import { PublicHeader, Footer } from "@/components/brand";
 export default function Home() {
   return (
@@ -25,6 +25,16 @@ export default function Home() {
               Create your profile
             </Link>
           </div>
+        </section>
+        <section className="shell homepage-careers-cta" aria-labelledby="find-roles">
+          <div>
+            <span className="eyebrow text-accent">EXPLORE CURRENT OPENINGS</span>
+            <h2 id="find-roles">Find a role that fits your skills.</h2>
+            <p>Explore opportunities, filter by work arrangement and department, and view full requirements before applying. You can browse roles without creating an account.</p>
+          </div>
+          <Link href="/careers" className="button">
+            Browse available roles <ArrowUpRight size={17} aria-hidden="true" />
+          </Link>
         </section>
         <section className="shell landing-steps" aria-labelledby="how-it-works">
           <h2 id="how-it-works">A simple way to apply</h2>
@@ -52,6 +62,13 @@ export default function Home() {
                 <p>{text}</p>
               </article>
             ))}
+          </div>
+        </section>
+        <section className="shell homepage-privacy-note" aria-label="Applicant privacy">
+          <ShieldCheck size={22} aria-hidden="true" />
+          <div>
+            <h2>Your application, in your hands.</h2>
+            <p>Upload your resume once, review application statuses from your account, and choose whether to be contacted about future opportunities. Learn how your data is handled in our <Link href="/privacy">applicant privacy notice</Link>.</p>
           </div>
         </section>
       </main>
