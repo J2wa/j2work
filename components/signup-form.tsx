@@ -103,7 +103,7 @@ export function SignupForm() {
       </div>
       <h2>Create your profile</h2>
       <p className="panel-intro">
-        Already part of the team? <Link href={typeof window === "undefined" ? "/login" : "/login" + window.location.search}>Log in</Link>
+        Already part of the team? <Link href="/login">Log in</Link>
       </p>
       <div className="form-steps">
         <span className={step === 1 ? "active" : "done"}>
