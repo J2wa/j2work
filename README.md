@@ -131,3 +131,9 @@ npm run test:integration
 - For streamed Next.js responses, a not-found page may use HTTP 200 after response headers are committed. Tests assert that inactive jobs render the not-found screen and disclose no role details; the application API returns 404 for inactive jobs.
 
 See [implementation notes](docs/recruitment-release.md) for the file list and verification limits.
+
+## Hourly job rates
+
+Admins can enter optional PHP and USD hourly rates when creating or editing jobs. Either or both can be published; blank fields hide the rate. Values are independent, with no exchange-rate conversion. Rates support two decimal places and are stored as integer centavos/cents. Migration `0002_careless_cardiac.sql` adds two nullable columns; existing listings keep rates unset.
+
+Job headers accept an optional public HTTPS image URL in the admin form. They appear on cards and detail pages; empty or failed images are hidden. No upload service or image proxy is added.

@@ -368,6 +368,8 @@ test(
       assert.equal(adminPage.status, 200);
       assert.match(await adminPage.text(), /Dashboard/);
       const jobInput = {
+        hourlyRatePhpCents: 25050,
+        hourlyRateUsdCents: 500,
         title: "Admin created role",
         department: "Engineering",
         roleType: "Developer",
@@ -381,7 +383,40 @@ test(
       };
       const created = await post("/api/admin/jobs", jobInput, cookie);
       assert.equal(created.status, 201);
-      const jobId = (await created.json()).job.id;
+      const createdJob = (await created.json()).job;
+      const jobId = createdJob.id;
+      assert.equal(createdJob.hourlyRatePhpCents, 25050);
+      assert.equal(createdJob.hourlyRateUsdCents, 500);
+      assert.match(
+        await (await fetch(origin + `/careers/jobs/${jobId}`)).text(),
+        /PHP 250.50\/hr/,
+      );
+      assert.equal(
+        (
+          await post(
+            "/api/admin/jobs",
+            { ...jobInput, hourlyRatePhpCents: -1 },
+            cookie,
+          )
+        ).status,
+        400,
+      );
+      assert.equal(
+        (
+          await mutate(`/api/admin/jobs/${jobId}`, {
+            ...jobInput,
+            hourlyRatePhpCents: null,
+            hourlyRateUsdCents: null,
+          })
+        ).status,
+        200,
+      );
+      const cleared = await client.execute({
+        sql: "SELECT hourly_rate_php_cents, hourly_rate_usd_cents FROM jobs WHERE id=?",
+        args: [jobId],
+      });
+      assert.equal(cleared.rows[0].hourly_rate_php_cents, null);
+      assert.equal(cleared.rows[0].hourly_rate_usd_cents, null);
       assert.equal(
         (
           await mutate(`/api/admin/jobs/${jobId}`, {

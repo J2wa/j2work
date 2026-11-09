@@ -1,4 +1,6 @@
 "use client";
+import { JobHeaderImage } from "@/components/job-header-image";
+import { HourlyRates } from "@/components/hourly-rates";
 import { useDeferredValue, useState } from "react";
 import Link from "next/link";
 import {
@@ -121,6 +123,7 @@ export function JobBoard({
         <div className="job-grid">
           {filtered.map((job) => (
             <article className="job-card" key={job.id}>
+              <JobHeaderImage url={job.headerImageUrl} />
               <div className="flex justify-between items-center gap-3">
                 <span className="eyebrow text-accent">{job.department}</span>
                 <span className="tag">{job.workSetting}</span>
@@ -139,6 +142,7 @@ export function JobBoard({
                   {job.roleType}
                 </span>
               </div>
+              <HourlyRates job={job} />
               <p>{job.summary}</p>
               <div className="job-card-bottom">
                 <ApplyButton
