@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BriefcaseBusiness, MapPin, Pause, Play } from "lucide-react";
+import { BriefcaseBusiness, MapPin, Pause, Play } from "lucide-react";
 import type { Job } from "@/lib/db/schema";
 import { JobHeaderImage } from "./job-header-image";
 import { HourlyRates } from "./hourly-rates";
@@ -17,10 +17,26 @@ export function JobCarousel({
 }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [pageSize, setPageSize] = useState(3);
+  const [reducedMotion, setReducedMotion] = useState(true);
   const [interacting, setInteracting] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
-  const current = Math.min(index, Math.max(0, jobs.length - 1));
-  const canRotate = jobs.length > 1;
+  const pageCount = Math.ceil(jobs.length / pageSize);
+  const current = Math.min(index, Math.max(0, pageCount - 1));
+  const canRotate = pageCount > 1;
+  const pages = Array.from({ length: pageCount }, (_, i) => jobs.slice(i * pageSize, (i + 1) * pageSize));
+
+  useEffect(() => {
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => {
+      setPageSize(window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1);
+      setReducedMotion(motion.matches);
+    };
+    update();
+    window.addEventListener("resize", update);
+    motion.addEventListener("change", update);
+    return () => { window.removeEventListener("resize", update); motion.removeEventListener("change", update); };
+  }, []);
 
   const scrollToIndex = useCallback((next: number, smooth = true) => {
     const viewport = viewportRef.current;
@@ -32,23 +48,16 @@ export function JobCarousel({
 
   const moveTo = useCallback((next: number) => {
     if (!jobs.length) return;
-    const normalized = (next + jobs.length) % jobs.length;
+    const normalized = (next + pageCount) % pageCount;
     setIndex(normalized);
-    scrollToIndex(normalized);
-  }, [jobs.length, scrollToIndex]);
+    scrollToIndex(normalized, !reducedMotion);
+  }, [jobs.length, pageCount, scrollToIndex, reducedMotion]);
 
   useEffect(() => {
-    const onResize = () => scrollToIndex(current, false);
-    onResize();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [current, scrollToIndex]);
-
-  useEffect(() => {
-    if (!canRotate || paused || interacting) return;
-    const timer = window.setInterval(() => moveTo(index + 1), 5500);
+    if (!canRotate || paused || interacting || reducedMotion) return;
+    const timer = window.setInterval(() => moveTo(current + 1), 5500);
     return () => window.clearInterval(timer);
-  }, [canRotate, paused, interacting, index, moveTo]);
+  }, [canRotate, paused, interacting, reducedMotion, current, moveTo]);
 
   function handleScroll() {
     const viewport = viewportRef.current;
@@ -71,7 +80,7 @@ export function JobCarousel({
         <BriefcaseBusiness size={28} className="text-accent" />
         <h3>No open positions right now.</h3>
         <p>Please check back soon for new opportunities.</p>
-        <Link className="text-link" href="/signup">Create your profile →</Link>
+        <Link className="text-link" href="/signup">Create your profile</Link>
       </div>
     );
   }
@@ -102,12 +111,13 @@ export function JobCarousel({
         aria-label="Job opportunities. Swipe or use the controls to browse."
         tabIndex={0}
       >
-        {jobs.map((job, i) => (
+        {pages.map((page, pageIndex) => (
+          <div key={pageIndex} className="carousel-page" role="group" aria-roledescription="slide"
+            aria-label={`Slide ${pageIndex + 1} of ${pageCount}`}>
+          {page.map((job) => (
           <article
             key={job.id}
-            className={"carousel-card" + (i === current ? " is-current" : "")}
-            aria-roledescription="slide"
-            aria-label={`${i + 1} of ${jobs.length}: ${job.title}`}
+            className="carousel-card"
           >
             <div className="carousel-art">
               <JobHeaderImage url={job.headerImageUrl} />
@@ -131,33 +141,34 @@ export function JobCarousel({
               <div className="carousel-actions">
                 <ApplyButton jobId={job.id} title={job.title} applied={appliedIds.includes(job.id)}
                   signedIn={signedIn} resumeReady={resumeReady} />
-                <Link className="text-link" href={`/careers/jobs/${job.id}`}>View role <ArrowRight size={16} /></Link>
+                <Link className="text-link" href={`/careers/jobs/${job.id}`}>View role</Link>
               </div>
             </div>
           </article>
+          ))}
+          </div>
         ))}
       </div>
 
       <div className="carousel-controls">
-        <button type="button" className="button secondary small carousel-arrow" aria-label="Previous job"
-          disabled={!canRotate} onClick={() => moveTo(current - 1)}><ArrowLeft size={18} /></button>
-        <div className="carousel-dots" aria-label="Choose a job">
-          {jobs.map((job, i) => (
-            <button key={job.id} type="button" className={"carousel-dot" + (i === current ? " active" : "")}
-              aria-label={`Show job ${i + 1}: ${job.title}`} aria-current={i === current ? "true" : undefined}
+        <button type="button" className="button secondary small" aria-label="Previous slide"
+          disabled={!canRotate} onClick={() => moveTo(current - 1)}>Previous</button>
+        <div className="carousel-dots" aria-label="Choose a slide">
+          {pages.map((_, i) => (
+            <button key={i} type="button" className={"carousel-dot" + (i === current ? " active" : "")}
+              aria-label={`Show slide ${i + 1}`} aria-current={i === current ? "true" : undefined}
               onClick={() => moveTo(i)} />
           ))}
         </div>
-        <button type="button" className="button secondary small carousel-arrow" aria-label="Next job"
-          disabled={!canRotate} onClick={() => moveTo(current + 1)}><ArrowRight size={18} /></button>
-        {canRotate && <button type="button" className="carousel-play" onClick={() => setPaused((value) => !value)}
-          aria-label={paused ? "Resume automatic carousel" : "Pause automatic carousel"}
-          title={paused ? "Resume auto-scroll" : "Pause auto-scroll"}>
+        <button type="button" className="button secondary small" aria-label="Next slide"
+          disabled={!canRotate} onClick={() => moveTo(current + 1)}>Next</button>
+        {canRotate && !reducedMotion && <button type="button" className="carousel-play" onClick={() => setPaused((value) => !value)}
+          aria-label={paused ? "Resume automatic carousel" : "Pause automatic carousel"}>
           {paused ? <Play size={16} /> : <Pause size={16} />}
           <span>{paused ? "Play" : "Pause"}</span>
         </button>}
       </div>
-      <p className="carousel-counter" aria-live="off">{current + 1} of {jobs.length} opportunities</p>
+      <p className="carousel-counter" aria-live="off">Slide {current + 1} of {pageCount} · {jobs.length} opportunities</p>
     </section>
   );
 }

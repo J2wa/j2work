@@ -3,8 +3,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowRight,
-  ArrowLeft,
   Check,
   LoaderCircle,
   ShieldCheck,
@@ -251,7 +249,7 @@ export function SignupForm() {
               disabled={busy}
               onClick={() => setStep(1)}
             >
-              <ArrowLeft size={17} /> Back
+              Back
             </button>
           ) : null}
           <button
@@ -265,13 +263,12 @@ export function SignupForm() {
               </>
             ) : step === 1 ? (
               <>
-                Continue <ArrowRight size={18} />
-              </>
+                Continue </>
             ) : accountId ? (
               "Retry resume upload"
             ) : (
               <>
-                Create my profile <ArrowUpRightIcon />
+                Create my profile
               </>
             )}
           </button>
@@ -283,7 +280,4 @@ export function SignupForm() {
       </form>
     </>
   );
-}
-function ArrowUpRightIcon() {
-  return <span aria-hidden="true">↗</span>;
 }
