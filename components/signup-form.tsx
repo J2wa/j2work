@@ -81,7 +81,8 @@ export function SignupForm() {
       await uploadResume(file, id, setProgress);
       setStage("Opening your portal…");
       toast.success("Your profile is ready. Welcome to ACES!");
-      router.push("/careers");
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(next?.startsWith("/careers/jobs/") && !next.includes("\\") && !next.includes("?") && !next.includes("#") ? next : "/careers");
       router.refresh();
     } catch (error) {
       const message =
@@ -102,7 +103,7 @@ export function SignupForm() {
       </div>
       <h2>Create your profile</h2>
       <p className="panel-intro">
-        Already part of the team? <Link href="/login">Log in</Link>
+        Already part of the team? <Link href={typeof window === "undefined" ? "/login" : "/login" + window.location.search}>Log in</Link>
       </p>
       <div className="form-steps">
         <span className={step === 1 ? "active" : "done"}>
