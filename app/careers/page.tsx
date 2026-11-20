@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { jobs, applications } from "@/lib/db/schema";
 import { JobBoard } from "@/components/job-board";
 import { SetupNotice } from "@/components/setup-notice";
-export const metadata = { title: "Career opportunities" };
+export const metadata = { title: "Open roles" };
 export default async function Page() {
   if (!process.env.TURSO_DATABASE_URL) return <SetupNotice />;
   const session = await getSession();
@@ -23,15 +23,7 @@ export default async function Page() {
   ]);
   return (
     <>
-      <div className="portal-welcome careers-heading">
-        <div>
-          <span className="eyebrow text-accent">
-            GROW WITH ACES INTELLIGENCE
-          </span>
-          <h1>Explore Career Opportunities</h1>
-          <p>Find your next opportunity with ACES Intelligence.</p>
-        </div>
-      </div>
+      <h1 className="careers-heading">Open roles</h1>
       <JobBoard
         jobs={roles}
         appliedIds={submitted.map((a) => a.jobId)}

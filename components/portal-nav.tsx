@@ -19,7 +19,7 @@ export function PortalNav() {
     <div className="portal-nav-wrap">
       <nav className="portal-nav" aria-label="Applicant navigation">
         {[
-          { href: "/careers", label: "Opportunities", icon: BriefcaseBusiness },
+          { href: "/careers", label: "Open roles", icon: BriefcaseBusiness },
           {
             href: "/careers/applications",
             label: "My applications",

@@ -1,4 +1,12 @@
 import { redirect } from "next/navigation";
-export default function Page() {
-  redirect("/signup");
+import { safeReturnPath, withReturnPath } from "@/lib/return-path";
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
+  redirect(
+    withReturnPath("/signup", safeReturnPath((await searchParams).next)),
+  );
 }

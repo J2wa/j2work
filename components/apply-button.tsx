@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { withReturnPath } from "@/lib/return-path";
 export function ApplyButton({
   jobId,
   title,
@@ -22,14 +23,17 @@ export function ApplyButton({
   if (applied || done)
     return (
       <span className="status-badge" role="status">
-        Already Applied
+        Already applied
       </span>
     );
   if (!signedIn || !resumeReady)
     return (
       <Link
         className="button small"
-        href={!signedIn ? "/login" : "/onboarding"}
+        href={withReturnPath(
+          signedIn ? "/onboarding" : "/login",
+          `/careers/jobs/${jobId}`,
+        )}
         aria-label={`Apply for ${title}`}
       >
         Apply

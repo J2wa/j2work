@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { Field, PasswordField } from "./fields";
 import { authClient } from "@/lib/auth-client";
 import { loginSchema } from "@/lib/validation";
-export function LoginForm() {
+import { withReturnPath } from "@/lib/return-path";
+export function LoginForm({ next }: { next?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +34,9 @@ export function LoginForm() {
           response.error.message || "Check your email and password.",
         );
       toast.success("Welcome back.");
-      router.push(response.data?.user.role === "admin" ? "/admin" : "/careers");
+      router.push(
+        next ?? (response.data?.user.role === "admin" ? "/admin" : "/careers"),
+      );
       router.refresh();
     } catch (error) {
       const message =
@@ -48,10 +51,10 @@ export function LoginForm() {
   }
   return (
     <>
-      <div className="eyebrow">YOUR APPLICANT PORTAL</div>
-      <h2>Welcome back.</h2>
+      <h1>Log in</h1>
       <p className="panel-intro">
-        New here? <Link href="/signup">Create your profile</Link>
+        New here?{" "}
+        <Link href={withReturnPath("/signup", next)}>Create profile</Link>
       </p>
       <form onSubmit={submit} className="form-stack" noValidate>
         <Field
@@ -83,8 +86,7 @@ export function LoginForm() {
               <LoaderCircle size={17} className="animate-spin" /> Signing in…
             </>
           ) : (
-            <>
-              Log in </>
+            <>Log in </>
           )}
         </button>
       </form>

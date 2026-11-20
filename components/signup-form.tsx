@@ -2,17 +2,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Check,
-  LoaderCircle,
-  ShieldCheck,
-} from "lucide-react";
+import { Check, LoaderCircle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Field, PasswordField, ResumePicker } from "./fields";
 import { signupSchema, settings, resumeError } from "@/lib/validation";
 import { authClient } from "@/lib/auth-client";
 import { uploadResume } from "@/lib/upload-client";
-export function SignupForm() {
+import { withReturnPath } from "@/lib/return-path";
+import { formatRoleLabel } from "@/lib/role-display";
+export function SignupForm({ next }: { next?: string }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
@@ -79,7 +77,7 @@ export function SignupForm() {
       await uploadResume(file, id, setProgress);
       setStage("Opening your portal…");
       toast.success("Your profile is ready. Welcome to ACES!");
-      router.push("/careers");
+      router.push(next ?? "/careers");
       router.refresh();
     } catch (error) {
       const message =
@@ -94,20 +92,17 @@ export function SignupForm() {
   }
   return (
     <>
-      <div className="flex justify-between gap-4">
-        <span className="eyebrow">JOIN ACES INTELLIGENCE</span>
-        <span className="mono text-xs text-muted">0{step} / 02</span>
-      </div>
-      <h2>Create your profile</h2>
+      <h1>Create profile</h1>
       <p className="panel-intro">
-        Already part of the team? <Link href="/login">Log in</Link>
+        Already have a profile?{" "}
+        <Link href={withReturnPath("/login", next)}>Log in</Link>
       </p>
       <div className="form-steps">
         <span className={step === 1 ? "active" : "done"}>
           <b>{step > 1 ? <Check size={12} /> : 1}</b>Your details
         </span>
         <span className={step === 2 ? "active" : ""}>
-          <b>2</b>Your next chapter
+          <b>2</b>Work preferences and resume
         </span>
       </div>
       <form onSubmit={submit} noValidate>
@@ -171,7 +166,7 @@ export function SignupForm() {
                         checked={values.preferredWorkSetting === s}
                         onChange={() => change("preferredWorkSetting", s)}
                       />
-                      {s}
+                      {formatRoleLabel(s)}
                     </label>
                   ))}
                 </div>
@@ -262,14 +257,11 @@ export function SignupForm() {
                 <LoaderCircle size={18} className="animate-spin" /> Please wait
               </>
             ) : step === 1 ? (
-              <>
-                Continue </>
+              <>Continue </>
             ) : accountId ? (
               "Retry resume upload"
             ) : (
-              <>
-                Create my profile
-              </>
+              <>Create profile</>
             )}
           </button>
         </div>

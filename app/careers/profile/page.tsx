@@ -7,9 +7,7 @@ export default async function Page() {
     <>
       <div className="portal-welcome">
         <div>
-          <div className="eyebrow">YOUR STORY, YOUR WAY</div>
-          <h1>My profile.</h1>
-          <p>Keep your details ready for your next opportunity.</p>
+          <h1>My profile</h1>
         </div>
       </div>
       <ProfileForm
