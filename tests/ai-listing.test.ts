@@ -105,7 +105,13 @@ test("Gemini header generation requests a stateless 3:2 image and validates byte
       const body = JSON.parse(String(request?.body));
       assert.equal(body.store, false);
       assert.equal(body.response_format.aspect_ratio, "3:2");
-      assert.match(body.input, /Two image frames/);
+      assert.match(body.input, /photorealistic editorial photograph/);
+      assert.match(body.input, /one adult actively doing the task/);
+      assert.match(body.input, /16:7 website crop/);
+      assert.deepEqual(
+        JSON.parse(body.input.split("Role reference:\n")[1]),
+        headerInput,
+      );
       return Response.json({
         steps: [
           {
