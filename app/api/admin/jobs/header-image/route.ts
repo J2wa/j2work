@@ -1,16 +1,15 @@
 import { NextRequest } from "next/server";
-import { z } from "zod";
 import { adminAccess } from "@/lib/admin";
-import { AiListingError, generateHeaderImage } from "@/lib/ai-listing";
+import {
+  AiListingError,
+  generateHeaderImage,
+  headerImageInputSchema,
+} from "@/lib/ai-listing";
 import { fail, sameOrigin, serviceError } from "@/lib/http";
 import { storeJobHeader } from "@/lib/job-images";
 import { allowAi } from "@/lib/limits";
 
 export const maxDuration = 60;
-
-const imageInput = z
-  .object({ imageBrief: z.string().trim().min(10).max(500) })
-  .strict();
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,15 +18,14 @@ export async function POST(request: NextRequest) {
     if (access.error) return access.error;
 
     const body = await request.json().catch(() => null);
-    const parsed = imageInput.safeParse(body);
-    if (!parsed.success)
-      return fail("Describe the scene in 10 to 500 characters.");
+    const parsed = headerImageInputSchema.safeParse(body);
+    if (!parsed.success) return fail(parsed.error.issues[0].message);
     if (!(await allowAi(access.user.id, "image")))
       return fail("Image generation limit reached. Try again later.", 429);
     if (!process.env.BLOB_READ_WRITE_TOKEN?.trim())
       return fail("Header image storage is unavailable.", 503);
 
-    const { bytes, ext } = await generateHeaderImage(parsed.data.imageBrief);
+    const { bytes, ext } = await generateHeaderImage(parsed.data);
     const url = await storeJobHeader(bytes, ext);
     return Response.json({ url }, { status: 201 });
   } catch (error) {

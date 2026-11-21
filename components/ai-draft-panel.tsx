@@ -43,13 +43,24 @@ export function AiDraftPanel({
     qualifications: "",
   });
   const [draft, setDraft] = useState<PolishedListing | null>(null);
-  const [imageBrief, setImageBrief] = useState("");
+  const [sceneOverride, setSceneOverride] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState("");
   const [pending, setPending] = useState<"polish" | "image" | null>(null);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const busy = disabled || pending !== null;
   const hasNotes = Object.values(notes).some((value) => value.trim());
+  const imageBrief = sceneOverride ?? draft?.imageBrief ?? "";
+  const jobDetails = [
+    notes.instructions,
+    notes.listing,
+    form.description,
+    form.summary,
+  ]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join("\n\n")
+    .slice(0, 15000);
 
   async function generate(kind: "polish" | "image") {
     setPending(kind);
@@ -69,10 +80,11 @@ export function AiDraftPanel({
           ...notes,
         });
         setDraft(listing);
-        setImageBrief((current) => current || listing.imageBrief);
         setStatus("Listing suggestion ready for review.");
       } else {
         const { url } = await post<{ url: string }>("header-image", {
+          title: form.title.trim() || draft?.title || "",
+          jobDetails,
           imageBrief,
         });
         setImageUrl(url);
@@ -179,21 +191,27 @@ export function AiDraftPanel({
           </section>
         )}
         <label className="field">
-          Header image scene
+          Header image scene (optional)
           <textarea
             rows={3}
             maxLength={500}
             value={imageBrief}
-            placeholder="Describe the scene or start with the listing draft’s suggestion."
+            placeholder="Optional. Describe a specific task to show in the photo."
             disabled={busy}
-            onChange={(event) => setImageBrief(event.target.value)}
+            onChange={(event) => setSceneOverride(event.target.value)}
           />
         </label>
+        <p className="field-help">
+          Gemini uses the job description and work notes to show a person doing
+          the work. Add a scene if there is a specific duty you want to feature.
+        </p>
         <div>
           <button
             type="button"
             className="button secondary"
-            disabled={busy || imageBrief.trim().length < 10}
+            disabled={
+              busy || (jobDetails.length < 10 && imageBrief.trim().length < 10)
+            }
             onClick={() => generate("image")}
           >
             {pending === "image"
