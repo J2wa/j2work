@@ -7,7 +7,7 @@
     "build": "node --import tsx scripts/prepare-db.ts && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test tests/validation.test.ts tests/email.test.ts tests/migration.test.ts",
+    "test": "node --import tsx --test tests/validation.test.ts tests/email.test.ts tests/migration.test.ts tests/ai-listing.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node --import tsx scripts/migrate.ts",
     "db:seed": "node --import tsx scripts/seed.ts",

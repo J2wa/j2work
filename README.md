@@ -92,6 +92,14 @@ The script matches an existing email case-insensitively, refuses missing/ambiguo
 - **Jobs:** create/edit the existing job fields; activate to publish; deactivate to close. Deactivation preserves application history. There is no job-delete action.
 - Optional `npm run db:seed` creates three **inactive** templates; activating genuine vacancies is an explicit admin action.
 
+## Gemini job drafting
+
+Set a server-only `GEMINI_API_KEY` in `.env.local` or in the `aces-careers` Vercel project's environment. Vercel needs a new deployment to pick up the variable. Optionally set `GEMINI_TEXT_MODEL` or `GEMINI_IMAGE_MODEL` to override the defaults (`gemini-flash-latest` and `gemini-nano-banana-2.1`).
+
+In **Admin → Jobs**, create or edit a job and open **Draft with Gemini**. Paste the role details, work instructions and qualifications, then select **Polish listing**. Review the suggested copy and use it in the form if it fits. For artwork, edit the image scene and select **Generate header image**. Image generation needs access to the Gemini image model and the existing private Vercel Blob store. Use **Save job** to persist the listing.
+
+Only the supplied role fields, notes or image scene are sent to Gemini. Keep applicant data and confidential client information out of those fields. Drafting allows 30 requests per admin per hour, and image generation allows 10.
+
 ## Resend setup
 
 1. Create/open the organization's Resend account and add the ACES sending domain.
