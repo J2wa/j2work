@@ -98,6 +98,8 @@ Set a server-only `GEMINI_API_KEY` in `.env.local` or in the `aces-careers` Verc
 
 In **Admin → Jobs**, create or edit a job and open **Draft with Gemini**. Paste the role details, work instructions and qualifications, then select **Polish listing**. Review the suggested copy and use it in the form if it fits. For artwork, edit the image scene and select **Generate header image**. Image generation needs access to the Gemini image model and the existing private Vercel Blob store. Use **Save job** to persist the listing.
 
+Gemini tries another compatible model when the first returns a quota error, is unavailable, or reports a server error. Listing drafts fall back to Gemini 3.5 Flash-Lite and 3.1 Flash-Lite. Header images fall back to Nano Banana 2 Lite and Nano Banana 2. A model override is tried first. All attempts use the same API key, so a project-wide quota or billing restriction can still prevent generation.
+
 Only the supplied role fields, notes or image scene are sent to Gemini. Keep applicant data and confidential client information out of those fields. Drafting allows 30 requests per admin per hour, and image generation allows 10.
 
 ## Resend setup

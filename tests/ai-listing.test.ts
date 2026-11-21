@@ -82,14 +82,6 @@ test("Gemini errors reject malformed drafts and never relay provider bodies", as
     ),
     /included a pay figure/,
   );
-  await assert.rejects(
-    polishListing(
-      input,
-      async () =>
-        new Response("provider body with a credential", { status: 429 }),
-    ),
-    { status: 429, message: "Gemini is rate limited. Try again later." },
-  );
 });
 
 test("Gemini header generation requests a stateless 3:2 image and validates bytes", async () => {
@@ -140,4 +132,92 @@ test("Gemini header generation requests a stateless 3:2 image and validates byte
     ),
     /exceeded 2 MB/,
   );
+});
+
+test("text drafting switches models on quota and model availability errors", async (t) => {
+  const env = process.env;
+  t.mock.property(process, "env", {
+    ...env,
+    GEMINI_TEXT_MODEL: "models/gemini-flash-latest",
+  });
+  const calls: string[] = [];
+  const signals = new Set<AbortSignal | null | undefined>();
+  const result = await polishListing(input, async (url, request) => {
+    calls.push(String(url).split("/").at(-1)!.split(":")[0]);
+    signals.add(request?.signal);
+    return calls.length === 3
+      ? textReply(draft)
+      : new Response(null, { status: calls.length === 1 ? 429 : 404 });
+  });
+  assert.equal(result.title, draft.title);
+  assert.deepEqual(calls, [
+    "gemini-flash-latest",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+  ]);
+  assert.equal(signals.size, 1);
+});
+
+test("header generation switches only to image models on quota and server errors", async (t) => {
+  t.mock.property(process, "env", { ...process.env, GEMINI_IMAGE_MODEL: "" });
+  const calls: string[] = [];
+  const jpeg = Buffer.from([255, 216, 255, 224, 1, 2]);
+  const image = await generateHeaderImage(
+    draft.imageBrief,
+    async (url, request) => {
+      assert.match(String(url), /\/v1beta\/interactions$/);
+      const body = JSON.parse(String(request?.body));
+      calls.push(body.model);
+      assert.equal(body.store, false);
+      assert.equal(body.response_format.type, "image");
+      if (calls.length < 3)
+        return new Response(null, { status: calls.length === 1 ? 503 : 429 });
+      return Response.json({
+        output_image: { type: "image", data: jpeg.toString("base64") },
+      });
+    },
+  );
+  assert.deepEqual(image.bytes, jpeg);
+  assert.deepEqual(calls, [
+    "gemini-nano-banana-2.1",
+    "gemini-3.1-flash-lite-image",
+    "gemini-3.1-flash-image",
+  ]);
+});
+
+test("a configured primary is tried once and quota exhaustion never relays provider bodies", async (t) => {
+  t.mock.property(process, "env", {
+    ...process.env,
+    GEMINI_TEXT_MODEL: "gemini-3.5-flash-lite",
+  });
+  const calls: string[] = [];
+  await assert.rejects(
+    polishListing(input, async (url) => {
+      calls.push(String(url).split("/").at(-1)!.split(":")[0]);
+      return new Response("provider body with a credential", {
+        status: calls.length === 1 ? 429 : 404,
+      });
+    }),
+    (error: Error & { status?: number }) =>
+      error.status === 429 &&
+      /no fallback model/.test(error.message) &&
+      !error.message.includes("credential"),
+  );
+  assert.deepEqual(calls, [
+    "gemini-3.5-flash-lite",
+    "gemini-flash-latest",
+    "gemini-3.1-flash-lite",
+  ]);
+});
+
+test("Gemini authentication errors stop the chain", async () => {
+  let calls = 0;
+  await assert.rejects(
+    polishListing(input, async () => {
+      calls += 1;
+      return new Response(null, { status: 401 });
+    }),
+    /API key and billing/,
+  );
+  assert.equal(calls, 1);
 });

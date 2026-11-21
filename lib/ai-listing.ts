@@ -87,42 +87,81 @@ function geminiKey() {
   return apiKey;
 }
 
+type GeminiTask = "polish" | "image";
+
+function modelsFor(task: GeminiTask) {
+  const defaults =
+    task === "polish"
+      ? [
+          "gemini-flash-latest",
+          "gemini-3.5-flash-lite",
+          "gemini-3.1-flash-lite",
+        ]
+      : [
+          "gemini-nano-banana-2.1",
+          "gemini-3.1-flash-lite-image",
+          "gemini-3.1-flash-image",
+        ];
+  const override =
+    task === "polish"
+      ? process.env.GEMINI_TEXT_MODEL
+      : process.env.GEMINI_IMAGE_MODEL;
+  const primary = override?.trim().replace(/^models\//, "") || defaults[0];
+  return [...new Set([primary, ...defaults])];
+}
+
 async function geminiRequest(
-  path: string,
-  body: unknown,
-  kind: "polish" | "image",
+  task: GeminiTask,
+  body: object,
   request: typeof fetch,
 ): Promise<unknown> {
   const apiKey = geminiKey();
+  const image = task === "image";
+  // All attempts share one deadline, leaving room for the header upload.
+  const signal = AbortSignal.timeout(image ? 50_000 : 35_000);
+  let rateLimited = false;
+  let temporarilyUnavailable = false;
+
   try {
-    const response = await request(
-      `https://generativelanguage.googleapis.com/v1beta/${path}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-          ...(kind === "image" ? { "Api-Revision": "2026-05-20" } : {}),
+    for (const model of modelsFor(task)) {
+      signal.throwIfAborted();
+      const path = image
+        ? "interactions"
+        : `models/${encodeURIComponent(model)}:generateContent`;
+      const response = await request(
+        `https://generativelanguage.googleapis.com/v1beta/${path}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
+            ...(image ? { "Api-Revision": "2026-05-20" } : {}),
+          },
+          body: JSON.stringify(image ? { ...body, model } : body),
+          cache: "no-store",
+          signal,
         },
-        body: JSON.stringify(body),
-        cache: "no-store",
-        signal: AbortSignal.timeout(kind === "image" ? 50_000 : 35_000),
-      },
-    );
-    if (response.ok) return await response.json();
-    await response.body?.cancel();
-    if (response.status === 429)
-      throw new AiListingError("Gemini is rate limited. Try again later.", 429);
-    if ([400, 401, 403, 404].includes(response.status))
-      throw new AiListingError(
-        "Gemini rejected the request. Check the configured model, API key and billing.",
       );
-    throw new AiListingError("Gemini is temporarily unavailable. Try again.");
+      if (response.ok) return await response.json();
+
+      // Use the status only. Provider error bodies can include sensitive details.
+      await response.body?.cancel().catch(() => undefined);
+      if (response.status === 429) {
+        rateLimited = true;
+      } else if (response.status >= 500) {
+        temporarilyUnavailable = true;
+      } else if (response.status !== 404) {
+        throw new AiListingError(
+          "Gemini rejected the request. Check the configured model, API key and billing.",
+        );
+      }
+    }
   } catch (error) {
     if (error instanceof AiListingError) throw error;
     if (
-      error instanceof Error &&
-      ["TimeoutError", "AbortError"].includes(error.name)
+      signal.aborted ||
+      (error instanceof Error &&
+        ["TimeoutError", "AbortError"].includes(error.name))
     )
       throw new AiListingError(
         "Gemini took too long to respond. Try again.",
@@ -130,6 +169,20 @@ async function geminiRequest(
       );
     throw new AiListingError("Could not read the Gemini response. Try again.");
   }
+
+  if (rateLimited)
+    throw new AiListingError(
+      "Gemini quota was reached and no fallback model could complete the request. Try again later or check project quotas and billing.",
+      429,
+    );
+  if (temporarilyUnavailable)
+    throw new AiListingError(
+      "Gemini models are temporarily unavailable. Try again.",
+      503,
+    );
+  throw new AiListingError(
+    "No configured Gemini model was available. Check the model settings for this project.",
+  );
 }
 
 function plainText(value: string) {
@@ -148,9 +201,8 @@ export async function polishListing(
   input: z.infer<typeof listingInputSchema>,
   request = fetch,
 ): Promise<PolishedListing> {
-  const model = process.env.GEMINI_TEXT_MODEL?.trim() || "gemini-flash-latest";
   const response = (await geminiRequest(
-    `models/${encodeURIComponent(model)}:generateContent`,
+    "polish",
     {
       systemInstruction: { parts: [{ text: instructions }] },
       contents: [{ role: "user", parts: [{ text: JSON.stringify(input) }] }],
@@ -160,7 +212,6 @@ export async function polishListing(
         maxOutputTokens: 8192,
       },
     },
-    "polish",
     request,
   )) as {
     candidates?: {
@@ -241,12 +292,9 @@ export async function generateHeaderImage(
   bytes: Buffer;
   ext: NonNullable<ReturnType<typeof sniffImageExt>>;
 }> {
-  const model =
-    process.env.GEMINI_IMAGE_MODEL?.trim() || "gemini-nano-banana-2.1";
   const response = await geminiRequest(
-    "interactions",
+    "image",
     {
-      model,
       input: `${imageStyle} ${JSON.stringify(brief)}`,
       store: false,
       response_format: {
@@ -256,7 +304,6 @@ export async function generateHeaderImage(
         image_size: "1K",
       },
     },
-    "image",
     request,
   );
   const parsed = imageResponse.safeParse(response);
