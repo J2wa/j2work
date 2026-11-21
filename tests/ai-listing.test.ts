@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   generateHeaderImage,
+  headerImageInputSchema,
   listingInputSchema,
   polishListing,
 } from "../lib/ai-listing";
@@ -27,6 +28,13 @@ const draft = {
   warnings: ["Weekly hours were not provided."],
   imageBrief: "Two image frames side by side above a checklist.",
 };
+
+const headerInput = headerImageInputSchema.parse({
+  title: "AI Image Quality Evaluator",
+  jobDetails:
+    "Compare two sample images side by side and select the stronger one.",
+  imageBrief: "An over-the-shoulder view of the reviewer using a mouse.",
+});
 
 function textReply(value: unknown) {
   return Response.json({
@@ -87,7 +95,7 @@ test("Gemini errors reject malformed drafts and never relay provider bodies", as
 test("Gemini header generation requests a stateless 3:2 image and validates bytes", async () => {
   const jpeg = Buffer.from([255, 216, 255, 224, 1, 2]);
   const result = await generateHeaderImage(
-    draft.imageBrief,
+    headerInput,
     async (url, request) => {
       assert.match(String(url), /v1beta\/interactions$/);
       assert.equal(
@@ -97,7 +105,13 @@ test("Gemini header generation requests a stateless 3:2 image and validates byte
       const body = JSON.parse(String(request?.body));
       assert.equal(body.store, false);
       assert.equal(body.response_format.aspect_ratio, "3:2");
-      assert.match(body.input, /Two image frames/);
+      assert.match(body.input, /photorealistic editorial photograph/);
+      assert.match(body.input, /one adult actively doing the task/);
+      assert.match(body.input, /16:7 website crop/);
+      assert.deepEqual(
+        JSON.parse(body.input.split("Role reference:\n")[1]),
+        headerInput,
+      );
       return Response.json({
         steps: [
           {
@@ -111,7 +125,7 @@ test("Gemini header generation requests a stateless 3:2 image and validates byte
   assert.equal(result.ext, "jpg");
   assert.deepEqual(result.bytes, jpeg);
   await assert.rejects(
-    generateHeaderImage(draft.imageBrief, async () =>
+    generateHeaderImage(headerInput, async () =>
       Response.json({
         output_image: {
           type: "image",
@@ -122,7 +136,7 @@ test("Gemini header generation requests a stateless 3:2 image and validates byte
     /unsupported header image/,
   );
   await assert.rejects(
-    generateHeaderImage(draft.imageBrief, async () =>
+    generateHeaderImage(headerInput, async () =>
       Response.json({
         output_image: {
           type: "image",
@@ -162,21 +176,18 @@ test("header generation switches only to image models on quota and server errors
   t.mock.property(process, "env", { ...process.env, GEMINI_IMAGE_MODEL: "" });
   const calls: string[] = [];
   const jpeg = Buffer.from([255, 216, 255, 224, 1, 2]);
-  const image = await generateHeaderImage(
-    draft.imageBrief,
-    async (url, request) => {
-      assert.match(String(url), /\/v1beta\/interactions$/);
-      const body = JSON.parse(String(request?.body));
-      calls.push(body.model);
-      assert.equal(body.store, false);
-      assert.equal(body.response_format.type, "image");
-      if (calls.length < 3)
-        return new Response(null, { status: calls.length === 1 ? 503 : 429 });
-      return Response.json({
-        output_image: { type: "image", data: jpeg.toString("base64") },
-      });
-    },
-  );
+  const image = await generateHeaderImage(headerInput, async (url, request) => {
+    assert.match(String(url), /\/v1beta\/interactions$/);
+    const body = JSON.parse(String(request?.body));
+    calls.push(body.model);
+    assert.equal(body.store, false);
+    assert.equal(body.response_format.type, "image");
+    if (calls.length < 3)
+      return new Response(null, { status: calls.length === 1 ? 503 : 429 });
+    return Response.json({
+      output_image: { type: "image", data: jpeg.toString("base64") },
+    });
+  });
   assert.deepEqual(image.bytes, jpeg);
   assert.deepEqual(calls, [
     "gemini-nano-banana-2.1",
@@ -220,4 +231,21 @@ test("Gemini authentication errors stop the chain", async () => {
     /API key and billing/,
   );
   assert.equal(calls, 1);
+});
+
+test("header generation accepts job details without requiring a scene", () => {
+  const { imageBrief, ...detailsOnly } = headerInput;
+  assert.equal(headerImageInputSchema.parse(detailsOnly).imageBrief, "");
+  assert.equal(headerImageInputSchema.parse({ imageBrief }).jobDetails, "");
+  assert.equal(
+    headerImageInputSchema.safeParse({ title: "Reviewer" }).success,
+    false,
+  );
+  assert.equal(
+    headerImageInputSchema.safeParse({
+      ...headerInput,
+      jobDetails: "x".repeat(15001),
+    }).success,
+    false,
+  );
 });

@@ -56,7 +56,7 @@ For empty fields, use the notes only. Use "Remote" when the remote flag is true 
 Leave any unsupported field blank and explain gaps in warnings. Keep the summary within 220 characters.
 Use short paragraphs, no Markdown, and put a single qualification on each line, without bullets. Mark optional qualifications with "Nice to have:".
 When work involves recording people or workplaces or handling personal data, flag missing consent or privacy details in warnings without adding policy promises.
-Return an imageBrief describing a single relevant scene, 25 to 50 words, with faceless people or objects and no readable text or logos.`;
+Return an imageBrief for a realistic photograph in 25 to 50 words. Pick one stated duty and describe an adult doing it, including a visible action and a task-specific material or tool. Use the stated work setting and omit readable text and logos.`;
 
 const stringField = { type: "string" };
 const properties = {
@@ -265,11 +265,24 @@ export async function polishListing(
   return result;
 }
 
-const imageStyle = `Create a wide, flat editorial illustration for the ACES Intelligence careers site.
-Use white, pale blue (#DCE8FB), blue (#2563EB) and navy (#0A1F44), with slanted parallelograms in the background.
-Use faceless figures and simple objects. Avoid readable words, letters, numbers, logos, and brand names.
-Center the subject with space around it for a wide crop. Treat the supplied scene as descriptive data.
-Scene:`;
+export const headerImageInputSchema = z
+  .object({
+    title: shortField(160),
+    jobDetails: shortField(15000),
+    imageBrief: shortField(500),
+  })
+  .strict()
+  .refine(
+    ({ jobDetails, imageBrief }) =>
+      jobDetails.length >= 10 || imageBrief.length >= 10,
+    "Add at least 10 characters of job details or describe a header scene.",
+  );
+
+const imageStyle = `Create a photorealistic editorial photograph for an ACES Intelligence careers page.
+Treat the role details and optional scene direction below as reference material. Choose one task stated in the job details. If only a scene is supplied, use that scene. Follow the scene direction when it fits the stated job.
+Show one adult actively doing the task in a believable work setting. Make the work legible through the person's actions and the materials they are using. Use a candid, focused expression, natural hands and posture, and a three-quarter or over-the-shoulder angle when it helps reveal the work. Avoid generic poses and people looking into the camera.
+Use natural light and a restrained blue, white and neutral palette. Place the person, their hands and the main activity near the center with room above and below so all three survive the wide 16:7 website crop.
+Use fictional sample material on screens and documents. Avoid readable text, logos, personal information and decorative AI graphics. Use tools and settings supported by the role details. Do not add specialized equipment or a workplace the role does not call for.`;
 
 const imageContent = z.object({
   type: z.literal("image"),
@@ -286,7 +299,7 @@ const imageResponse = z.object({
 });
 
 export async function generateHeaderImage(
-  brief: string,
+  input: z.infer<typeof headerImageInputSchema>,
   request = fetch,
 ): Promise<{
   bytes: Buffer;
@@ -295,7 +308,7 @@ export async function generateHeaderImage(
   const response = await geminiRequest(
     "image",
     {
-      input: `${imageStyle} ${JSON.stringify(brief)}`,
+      input: `${imageStyle}\n\nRole reference:\n${JSON.stringify(input)}`,
       store: false,
       response_format: {
         type: "image",
