@@ -1,5 +1,6 @@
 "use client";
 import { JobHeaderImage } from "@/components/job-header-image";
+import { AiDraftPanel } from "./ai-draft-panel";
 import { HourlyRates } from "./hourly-rates";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,7 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<Input>(empty);
   const [show, setShow] = useState(false);
+  const [formVersion, setFormVersion] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -61,6 +63,7 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
         className="button mb-6"
         disabled={busy}
         onClick={() => {
+          setFormVersion((version) => version + 1);
           setEditing(null);
           setForm(empty);
           setShow(true);
@@ -83,6 +86,14 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
           }}
         >
           <h2>{editing ? "Edit job" : "New job"}</h2>
+          <AiDraftPanel
+            key={formVersion}
+            form={form}
+            disabled={busy}
+            onApply={(patch) =>
+              setForm((current) => ({ ...current, ...patch }))
+            }
+          />
           <div className="form-grid">
             {(
               [
@@ -284,6 +295,7 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
                 className="button small secondary"
                 disabled={busy}
                 onClick={() => {
+                  setFormVersion((version) => version + 1);
                   setForm(
                     jobSchema.parse({
                       title: job.title,

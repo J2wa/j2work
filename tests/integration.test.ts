@@ -141,6 +141,15 @@ test(
       );
       const anonymousAdmin = await post("/api/admin/jobs", {});
       assert.equal(anonymousAdmin.status, 401);
+      for (const action of ["polish", "header-image"]) {
+        const route = `/api/admin/jobs/${action}`;
+        assert.equal((await post(route, {})).status, 401);
+        assert.equal((await post(route, {}, cookie)).status, 403);
+        assert.equal(
+          (await post(route, {}, cookie, "https://example.test")).status,
+          403,
+        );
+      }
       assert.equal((await post("/api/admin/job-images", {})).status, 401);
       assert.equal((await post("/api/admin/job-images", {}, cookie)).status, 403);
       assert.equal((await fetch(origin + "/api/job-images/resume.pdf")).status, 404);
