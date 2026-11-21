@@ -2,6 +2,7 @@ import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { ArrowUpRight, Files } from "lucide-react";
 import { requireApplicant } from "@/lib/auth";
+import { formatRoleLabel } from "@/lib/role-display";
 import { db } from "@/lib/db";
 import { applications, jobs } from "@/lib/db/schema";
 const labels: Record<string, string> = {
@@ -33,12 +34,10 @@ export default async function Page() {
     <>
       <div className="portal-welcome">
         <div>
-          <div className="eyebrow">EVERY STEP FORWARD</div>
-          <h1>My applications.</h1>
-          <p>Your opportunities, all in one place.</p>
+          <h1>My applications</h1>
         </div>
         <Link href="/careers" className="button secondary">
-          Explore roles <ArrowUpRight size={17} />
+          Open roles <ArrowUpRight size={17} />
         </Link>
       </div>
       <div className="stats-row">
@@ -62,7 +61,9 @@ export default async function Page() {
           {rows.map((a) => (
             <article key={a.id}>
               <div>
-                <div className="eyebrow">{a.department}</div>
+                <div className="role-department">
+                  {formatRoleLabel(a.department)}
+                </div>
                 <h2>
                   {a.isActive ? (
                     <Link href={`/careers/jobs/${a.jobId}`}>{a.title}</Link>
@@ -107,13 +108,13 @@ export default async function Page() {
           <div className="empty-icon">
             <Files size={25} />
           </div>
-          <h3>Your story starts with an application.</h3>
+          <h3>No applications yet.</h3>
           <p>
             When you apply for a role, you’ll see it here along with its latest
             status.
           </p>
           <Link href="/careers" className="button">
-            Explore opportunities <ArrowUpRight size={17} />
+            Open roles <ArrowUpRight size={17} />
           </Link>
         </div>
       )}

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Field, ResumePicker } from "./fields";
 import { profileSchema, settings } from "@/lib/validation";
 import { uploadResume } from "@/lib/upload-client";
+import { formatRoleLabel } from "@/lib/role-display";
 type Profile = {
   id: string;
   name: string;
@@ -53,7 +54,6 @@ export function ProfileForm({ profile }: { profile: Profile }) {
     <div className="profile-grid">
       <form className="profile-panel form-stack" onSubmit={save} noValidate>
         <div>
-          <div className="eyebrow">THE BASICS</div>
           <h2>Your details</h2>
         </div>
         <Field
@@ -84,7 +84,9 @@ export function ProfileForm({ profile }: { profile: Profile }) {
             }
           >
             {settings.map((s) => (
-              <option key={s}>{s}</option>
+              <option key={s} value={s}>
+                {formatRoleLabel(s)}
+              </option>
             ))}
           </select>
         </div>
@@ -127,7 +129,6 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       </form>
       <div>
         <div className="profile-panel">
-          <div className="eyebrow">YOUR EXPERIENCE</div>
           <h2>Your resume</h2>
           <div className="saved-resume">
             <FileText size={22} />
@@ -149,9 +150,11 @@ export function ProfileForm({ profile }: { profile: Profile }) {
 export function ResumeForm({
   userId,
   onboarding = false,
+  next,
 }: {
   userId: string;
   onboarding?: boolean;
+  next?: string;
 }) {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
@@ -169,7 +172,7 @@ export function ResumeForm({
     try {
       await uploadResume(file, userId, setProgress);
       toast.success("Your resume is saved.");
-      if (onboarding) router.push("/careers");
+      if (onboarding) router.push(next ?? "/careers");
       router.refresh();
       setFile(null);
     } catch (e) {
@@ -211,7 +214,7 @@ export function ResumeForm({
             <LoaderCircle size={17} className="animate-spin" /> Please wait
           </>
         ) : onboarding ? (
-          "Save and explore opportunities"
+          "Save resume"
         ) : (
           "Update resume"
         )}

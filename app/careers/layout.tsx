@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Brand, Footer } from "@/components/brand";
+import { Brand, Footer, PublicHeader } from "@/components/brand";
 import { PortalNav } from "@/components/portal-nav";
 import { getSession } from "@/lib/auth";
 export const dynamic = "force-dynamic";
@@ -11,36 +11,30 @@ export default async function Layout({
   const session = await getSession();
   return (
     <>
-      <header className="site-header">
-        <div className="shell header-row">
-          <Brand />
-          <div className="header-actions">
-            {session?.user.role === "admin" && (
-              <Link href="/admin" className="text-link">
-                Admin dashboard
+      {session ? (
+        <header className="site-header">
+          <div className="shell header-row">
+            <Brand />
+            <div className="header-actions">
+              {session.user.role === "admin" && (
+                <Link href="/admin" className="text-link">
+                  Admin dashboard
+                </Link>
+              )}
+              <Link href="/careers/profile" className="text-link">
+                My profile
               </Link>
-            )}
-            <Link
-              href={session ? "/careers/profile" : "/login"}
-              className="text-link"
-            >
-              {session ? "My profile" : "Log in"}
-            </Link>
+            </div>
           </div>
-        </div>
-      </header>
-      <div className="shell">
-        {session ? (
+        </header>
+      ) : (
+        <PublicHeader />
+      )}
+      {session && (
+        <div className="shell">
           <PortalNav />
-        ) : (
-          <nav className="portal-nav" aria-label="Careers navigation">
-            <Link href="/careers" className="active">
-              Careers
-            </Link>
-            <Link href="/signup">Create account</Link>
-          </nav>
-        )}
-      </div>
+        </div>
+      )}
       <main id="main" className="shell portal-main">
         {children}
       </main>

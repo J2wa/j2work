@@ -76,7 +76,7 @@ test(
       assert.ok(ready, output);
       const unauth = await fetch(origin + "/careers");
       assert.equal(unauth.status, 200, "Active jobs are publicly browsable");
-      assert.match(await unauth.text(), /No open positions right now/);
+      assert.match(await unauth.text(), /No open roles right now/);
       const privatePage = await fetch(origin + "/careers/applications", {
         redirect: "manual",
       });
@@ -396,7 +396,7 @@ test(
       assert.equal(createdJob.hourlyRateUsdCents, 500);
       assert.match(
         await (await fetch(origin + `/careers/jobs/${jobId}`)).text(),
-        /PHP 250.50\/hr/,
+        /₱250\.50\/hr/,
       );
       assert.equal(
         (
@@ -461,7 +461,7 @@ test(
       const hidden = await (
         await fetch(origin + `/careers/jobs/${jobId}`)
       ).text();
-      assert.match(hidden, /This path ends here/);
+      assert.match(hidden, /Page unavailable/);
       assert.doesNotMatch(hidden, /Updated role/);
       const closed = await mutate("/api/admin/jobs/test-job", {
         isActive: false,
@@ -473,7 +473,7 @@ test(
           headers: { Cookie: cookie },
         })
       ).text();
-      assert.match(closedDetails, /This path ends here/);
+      assert.match(closedDetails, /Page unavailable/);
       assert.doesNotMatch(
         closedDetails,
         /Test role/,

@@ -5,8 +5,7 @@ export default function Page() {
     <>
       <PublicHeader />
       <main id="main" className="shell privacy-page">
-        <div className="eyebrow">YOUR INFORMATION MATTERS</div>
-        <h1>Applicant privacy.</h1>
+        <h1>Applicant privacy</h1>
         <p>
           This notice explains how this careers portal uses the information you
           share with ACES Intelligence.

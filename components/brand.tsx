@@ -23,21 +23,15 @@ export function PublicHeader() {
     <header className="site-header">
       <div className="shell header-row">
         <Brand />
-        <nav
-          aria-label="Main navigation"
-          className="flex items-center gap-3 sm:gap-7"
-        >
-          <a
-            className="hidden text-sm sm:inline"
-            href="https://acesintelligence.xyz"
-          >
+        <nav aria-label="Main navigation" className="public-nav">
+          <a className="company-link" href="https://acesintelligence.xyz">
             Our company
           </a>
-          <Link className="text-sm font-semibold" href="/login">
+          <Link className="text-link" href="/login">
             Log in
           </Link>
           <Link className="button small" href="/signup">
-            Join the team
+            Create profile
           </Link>
         </nav>
       </div>
@@ -48,13 +42,13 @@ export function Footer() {
   return (
     <footer className="site-footer">
       <div className="shell flex flex-col justify-between gap-6 sm:flex-row">
-        <p className="text-xs text-muted">
-          © {new Date().getFullYear()} ACES Intelligence. Human expertise.
-          Better AI.
+        <p className="text-muted">
+          © {new Date().getFullYear()} ACES Intelligence.
         </p>
-        <div className="flex gap-6 text-xs">
+        <div className="footer-links">
           <Link href="/privacy">Applicant privacy</Link>
           <a href="https://acesintelligence.xyz/inquiry">Get in touch</a>
+          <a href="https://acesintelligence.xyz">Our company</a>
         </div>
       </div>
     </footer>

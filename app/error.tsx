@@ -3,7 +3,6 @@ import Link from "next/link";
 export default function Error({ reset }: { reset: () => void }) {
   return (
     <main id="main" className="shell empty-state min-h-[70vh]">
-      <div className="eyebrow">LET’S TRY THAT AGAIN</div>
       <h1>We couldn’t load this page.</h1>
       <p>
         The portal may be temporarily unavailable. Please retry in a moment.

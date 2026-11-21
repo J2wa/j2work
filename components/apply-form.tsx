@@ -2,11 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  CheckCircle2,
-  LoaderCircle,
-  FileText,
-} from "lucide-react";
+import { CheckCircle2, LoaderCircle, FileText } from "lucide-react";
 import { toast } from "sonner";
 export function ApplyForm({
   jobId,
@@ -56,18 +52,18 @@ export function ApplyForm({
       {done ? (
         <>
           <CheckCircle2 size={32} className="text-success" />
-          <h2>You’re in the running.</h2>
+          <h2>Application submitted</h2>
           <p>
             Your application has been submitted. You can follow its status in
             your portal.
           </p>
           <Link href="/careers/applications" className="button w-full">
-            View my applications </Link>
+            View my applications{" "}
+          </Link>
         </>
       ) : (
         <>
-          <div className="eyebrow">TAKE THE NEXT STEP</div>
-          <h2>Make your move.</h2>
+          <h2>Apply for this role</h2>
           <p>Apply with your saved profile and resume.</p>
           <div className="saved-resume">
             <FileText size={20} />
@@ -85,7 +81,7 @@ export function ApplyForm({
                 onChange={(e) => setNote(e.target.value)}
                 maxLength={3000}
                 rows={5}
-                placeholder="Tell us what makes this opportunity a good fit for you."
+                placeholder="Tell us what makes this role a good fit for you."
               />
               <p className="field-help text-right">{note.length} / 3,000</p>
             </div>
@@ -94,17 +90,18 @@ export function ApplyForm({
                 {error}
               </p>
             ) : null}
-            <button className="button accent w-full mt-4" disabled={busy}>
-              {busy ? (
-                <>
-                  <LoaderCircle size={17} className="animate-spin" />{" "}
-                  Submitting…
-                </>
-              ) : (
-                <>
-                  Apply now </>
-              )}
-            </button>
+            <div className="apply-action">
+              <button className="button w-full" disabled={busy}>
+                {busy ? (
+                  <>
+                    <LoaderCircle size={17} className="animate-spin" />{" "}
+                    Submitting…
+                  </>
+                ) : (
+                  "Apply"
+                )}
+              </button>
+            </div>
             <p className="text-xs text-muted mt-4">
               Your profile and resume will be shared with the ACES hiring team
               for this role.
