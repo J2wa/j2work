@@ -45,6 +45,11 @@ function createAuth() {
           required: false,
           defaultValue: false,
         },
+        interestedRoles: {
+          type: "string",
+          required: false,
+          defaultValue: "[]",
+        },
         resumeUrl: { type: "string", required: false, input: false },
         resumeName: { type: "string", required: false, input: false },
       },

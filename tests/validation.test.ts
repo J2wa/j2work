@@ -3,10 +3,16 @@ import assert from "node:assert/strict";
 import { zipSync, strToU8 } from "fflate";
 import {
   signupSchema,
+  specialistSchema,
   resumeError,
   applicationSchema,
   MAX_RESUME_SIZE,
 } from "../lib/validation";
+import {
+  buildRoleChecklistGroups,
+  parseInterestedRoles,
+  serializeInterestedRoles,
+} from "../lib/role-catalog";
 import { validResumeBytes } from "../lib/resume";
 const valid = {
   name: "Test Applicant",
@@ -19,6 +25,14 @@ const valid = {
 };
 test("registration normalizes email and enforces required fields", () => {
   assert.equal(signupSchema.parse(valid).email, "test@example.com");
+  assert.deepEqual(signupSchema.parse(valid).interestedRoles, []);
+  assert.deepEqual(
+    signupSchema.parse({
+      ...valid,
+      interestedRoles: ["AI Model Evaluator", "Multimodal QA Specialist"],
+    }).interestedRoles,
+    ["AI Model Evaluator", "Multimodal QA Specialist"],
+  );
   for (const change of [
     { name: "" },
     { email: "invalid" },
@@ -94,4 +108,44 @@ test("application note length and role are validated", () => {
   );
   assert.equal(applicationSchema.safeParse({ jobId: "" }).success, false);
   assert.equal(applicationSchema.parse({ jobId: "role" }).coverNote, "");
+});
+test("specialist talent pool entries validate fields and URLs strictly", () => {
+  const entry = {
+    fullName: "Dr. Maria Santos",
+    email: "MARIA@example.com",
+    primaryDomain: "Medicine & Healthcare",
+    specialtyDetails: "MD Internal Medicine",
+    yearsExperience: "6–10 years",
+    highestCredential: "Licensed Professional (MD, JD, CPA, RN, Engr.)",
+    preferredWorkSetting: "Project-Basis",
+    portfolioUrl: "https://linkedin.com/in/maria-santos",
+    availabilityNotes: "10 hours/week",
+  };
+  assert.equal(specialistSchema.parse(entry).email, "maria@example.com");
+  assert.equal(
+    specialistSchema.safeParse({ ...entry, portfolioUrl: "javascript:alert(1)" })
+      .success,
+    false,
+  );
+  assert.equal(
+    specialistSchema.safeParse({ ...entry, primaryDomain: "Unknown" }).success,
+    false,
+  );
+});
+test("role checklist catalog deduplicates extra active jobs and round-trips roles", () => {
+  const groups = buildRoleChecklistGroups([
+    "AI Model Evaluator",
+    "Custom Robotics Reviewer",
+  ]);
+  assert.equal(groups[0].category, "Currently Open Roles");
+  assert.deepEqual(groups[0].roles, ["Custom Robotics Reviewer"]);
+  const encoded = serializeInterestedRoles([
+    "AI Model Evaluator",
+    "AI Model Evaluator",
+    "  STEM & Coding Specialist  ",
+  ]);
+  assert.deepEqual(parseInterestedRoles(encoded), [
+    "AI Model Evaluator",
+    "STEM & Coding Specialist",
+  ]);
 });

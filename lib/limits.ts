@@ -26,3 +26,7 @@ export function allowEmailRetry(userId: string) {
 export function allowAi(userId: string, kind: "polish" | "image") {
   return allowHourly(`ai-${kind}`, userId, kind === "image" ? 10 : 30);
 }
+
+export function allowSpecialistEntry(key: string) {
+  return allowHourly("specialist-pool", key, 10);
+}

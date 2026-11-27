@@ -4,9 +4,11 @@ import { useRouter } from "next/navigation";
 import { FileText, Download, LoaderCircle, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Field, ResumePicker } from "./fields";
+import { RoleChecklist } from "./role-checklist";
 import { profileSchema, settings } from "@/lib/validation";
 import { uploadResume } from "@/lib/upload-client";
 import { formatRoleLabel } from "@/lib/role-display";
+
 type Profile = {
   id: string;
   name: string;
@@ -15,13 +17,22 @@ type Profile = {
   preferredWorkSetting: string;
   referredBy: string;
   talentPoolOptIn: boolean;
+  interestedRoles: string[];
   resumeName?: string | null;
 };
-export function ProfileForm({ profile }: { profile: Profile }) {
+
+export function ProfileForm({
+  profile,
+  availableRoles = [],
+}: {
+  profile: Profile;
+  availableRoles?: string[];
+}) {
   const router = useRouter();
   const [v, setV] = useState(profile);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -50,6 +61,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       setBusy(false);
     }
   }
+
   return (
     <div className="profile-grid">
       <form className="profile-panel form-stack" onSubmit={save} noValidate>
@@ -90,6 +102,12 @@ export function ProfileForm({ profile }: { profile: Profile }) {
             ))}
           </select>
         </div>
+        <RoleChecklist
+          selected={v.interestedRoles}
+          onChange={(interestedRoles) => setV({ ...v, interestedRoles })}
+          extraRoles={availableRoles}
+          disabled={busy}
+        />
         <Field
           label="Referred by"
           optional
@@ -147,6 +165,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
     </div>
   );
 }
+
 export function ResumeForm({
   userId,
   onboarding = false,

@@ -74,6 +74,30 @@ test(
         await new Promise((r) => setTimeout(r, 500));
       }
       assert.ok(ready, output);
+      const specialist = {
+        fullName: "Test Specialist",
+        email: "specialist@example.com",
+        primaryDomain: "Medicine & Healthcare",
+        specialtyDetails: "Clinical documentation review",
+        yearsExperience: "3–5 years",
+        highestCredential: "Master’s degree",
+      };
+      for (const response of await Promise.all([
+        post("/api/specialists", specialist),
+        post("/api/specialists", specialist),
+      ])) {
+        assert.equal(response.status, 200);
+        assert.deepEqual(await response.json(), { ok: true });
+      }
+      const specialistRows = await client.execute({
+        sql: "SELECT specialty_details FROM domain_specialists WHERE email = ?",
+        args: [specialist.email],
+      });
+      assert.equal(specialistRows.rows.length, 1);
+      assert.equal(
+        specialistRows.rows[0].specialty_details,
+        specialist.specialtyDetails,
+      );
       const unauth = await fetch(origin + "/careers");
       assert.equal(unauth.status, 200, "Active jobs are publicly browsable");
       assert.match(await unauth.text(), /No open roles right now/);
@@ -151,8 +175,14 @@ test(
         );
       }
       assert.equal((await post("/api/admin/job-images", {})).status, 401);
-      assert.equal((await post("/api/admin/job-images", {}, cookie)).status, 403);
-      assert.equal((await fetch(origin + "/api/job-images/resume.pdf")).status, 404);
+      assert.equal(
+        (await post("/api/admin/job-images", {}, cookie)).status,
+        403,
+      );
+      assert.equal(
+        (await fetch(origin + "/api/job-images/resume.pdf")).status,
+        404,
+      );
       assert.equal((await post("/api/admin/jobs", {}, cookie)).status, 403);
       assert.equal(
         (
@@ -381,8 +411,21 @@ test(
       assert.equal(adminPage.status, 200);
       assert.match(await adminPage.text(), /Dashboard/);
       const invalidImage = new FormData();
-      invalidImage.append("image", new Blob(["not a real image"], { type: "image/png" }), "fake.png");
-      assert.equal((await fetch(origin + "/api/admin/job-images", { method: "POST", headers: { Cookie: cookie, Origin: origin }, body: invalidImage })).status, 400);
+      invalidImage.append(
+        "image",
+        new Blob(["not a real image"], { type: "image/png" }),
+        "fake.png",
+      );
+      assert.equal(
+        (
+          await fetch(origin + "/api/admin/job-images", {
+            method: "POST",
+            headers: { Cookie: cookie, Origin: origin },
+            body: invalidImage,
+          })
+        ).status,
+        400,
+      );
       const jobInput = {
         hourlyRatePhpCents: 25050,
         hourlyRateUsdCents: 500,
@@ -407,7 +450,9 @@ test(
         await (await fetch(origin + `/careers/jobs/${jobId}`)).text(),
         /₱250\.50\/hr/,
       );
-      const preflight = await fetch(origin + "/api/jobs", { method: "OPTIONS" });
+      const preflight = await fetch(origin + "/api/jobs", {
+        method: "OPTIONS",
+      });
       assert.equal(preflight.status, 204);
       assert.equal(preflight.headers.get("access-control-allow-origin"), "*");
       const publicFeed = await fetch(origin + "/api/jobs");
@@ -415,13 +460,24 @@ test(
       assert.equal(publicFeed.headers.get("access-control-allow-origin"), "*");
       const publicFeedBody = await publicFeed.json();
       assert.equal(publicFeedBody.count, publicFeedBody.jobs.length);
-      const publicJob = publicFeedBody.jobs.find((job: { id: string }) => job.id === jobId);
+      const publicJob = publicFeedBody.jobs.find(
+        (job: { id: string }) => job.id === jobId,
+      );
       assert.ok(publicJob);
       assert.equal(publicJob.url, `${origin}/careers/jobs/${jobId}`);
       assert.equal(publicJob.hourlyRatePhpCents, 25050);
       assert.equal(publicJob.hourlyRateUsdCents, 500);
-      for (const key of ["description", "requirements", "isActive", "applicantId"]) {
-        assert.equal(Object.hasOwn(publicJob, key), false, `Public job omits ${key}`);
+      for (const key of [
+        "description",
+        "requirements",
+        "isActive",
+        "applicantId",
+      ]) {
+        assert.equal(
+          Object.hasOwn(publicJob, key),
+          false,
+          `Public job omits ${key}`,
+        );
       }
       assert.equal(
         (
