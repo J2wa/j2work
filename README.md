@@ -14,7 +14,7 @@ Production: https://careers.acesintelligence.xyz · Repository: https://github.c
 - Better Auth's official admin plugin, with exact `role === "admin"` authorization on every admin page and API. Roles are re-read for requests so demotion takes effect for existing sessions. Signup and profile edits cannot grant administrative privileges.
 - New-application notifications to `acesintelligenceph@gmail.com`, with a durable queue, provider idempotency keys and an admin retry action. Email failure never rolls back a stored application.
 
-**Initial email scope:** only recruitment-team notifications are enabled. Applicant confirmations, status-change emails, confirmation resends and talent-pool campaigns are deferred. Applicants see current statuses in their account. Updating a status or refreshing a page sends no email.
+New applications queue a receipt for the applicant and a notification for the recruitment team. Applicants can check their status in their account. Updating a status or refreshing a page sends no email.
 
 ## Local setup
 
@@ -58,7 +58,7 @@ Migration `drizzle/0001_thick_kree.sql` is additive:
 
 - `applicants`: `role` (default `user`), `banned` (default false), `ban_reason`, `ban_expires`.
 - `sessions`: nullable `impersonated_by` for Better Auth's admin plugin.
-- `application_emails`: one row per application, delivery state, frozen email payload, attempt timestamps/count, provider receipt and safe error code.
+- `application_emails` and `application_confirmations`: one delivery record per application and recipient type, with independent state, payload, attempts and provider receipt.
 
 No users, accounts, passwords, resumes, jobs or applications are deleted or rewritten. Existing users stay ordinary applicants. The unique applicant/job index is unchanged. Existing applications are **not** retroactively emailed.
 
@@ -68,7 +68,7 @@ Apply the migration against the intended database using its configured environme
 npm run db:migrate
 ```
 
-Drizzle's journal makes this idempotent. Do not use database reset or schema-push commands. The migration test upgrades a populated original-schema database and verifies records and the unique constraint survive. The application and its email queue record are inserted in the same transaction.
+Drizzle's journal makes this idempotent. Do not use database reset or schema-push commands. The migration test upgrades a populated original-schema database and verifies records and the unique constraint survive. The application and both email queue records are inserted in the same transaction.
 
 ## How to Add an Admin
 
@@ -108,18 +108,18 @@ Only the supplied role fields, notes or image scene are sent to Gemini. Keep app
 2. Add the DNS records provided by Resend to the domain's DNS provider. Wait for Resend to confirm verification.
 3. Create an API key with sending access and store it as `RESEND_API_KEY` in Vercel. Set `RESEND_FROM_EMAIL` to a verified-domain address, `CAREERS_ADMIN_EMAIL` to the recruitment inbox and `CAREERS_SITE_URL` to the deployed HTTPS origin.
 4. Redeploy to load the environment. `/admin` shows whether the required values are present; this is **not** proof of domain verification or delivery.
-5. Submit a controlled application in a test environment, verify the inbox and Resend delivery logs, and check the email's authenticated application-review link. Queue state `sent` means Resend accepted the request, not proof of inbox delivery.
+5. Submit a controlled application in a test environment. Check the applicant and recruitment inboxes, Resend's delivery logs and both authenticated portal links. The queue records `sent` when Resend accepts the message. Resend's delivery logs can confirm inbox delivery.
 
-The message includes the applicant's name/email, position, submission time in `Asia/Manila` and an absolute link to `/admin/applications?id=...`. It contains an escaped HTML template and a plain-text alternative. Resumes are not publicly attached or linked.
+The recruitment notification includes the applicant's name and email, position, submission time in `Asia/Manila` and a link to the admin dashboard. The applicant receipt confirms submission for the named role and links to `/careers/applications`. Both include escaped HTML and plain-text versions.
 
 Official references: [Better Auth admin plugin](https://www.better-auth.com/docs/plugins/admin), [Resend domain verification](https://resend.com/docs/dashboard/domains/introduction), [Resend idempotency keys](https://resend.com/docs/dashboard/emails/idempotency-keys).
 
 ### Failures and safe retries
 
 - With missing configuration, applications are still saved; email rows remain `pending` and the dashboard displays setup guidance.
-- A new application schedules one send. Duplicate Apply requests return 409 and do not enqueue another notification.
+- A new application schedules one send per recipient type. Duplicate Apply requests return 409 before queuing email.
 - The full payload is frozen on the first attempt and retries reuse the same provider idempotency key. Dashboard refreshes never send messages.
-- Authorized admins can choose **Retry notification** for pending, failed or interrupted sends. Retries are limited to one attempt per application per minute and 20 retry requests per admin per hour.
+- Authorized admins can choose **Retry notification** or **Retry confirmation** for pending, failed or interrupted sends. Retries are limited to one attempt per email per minute and 20 retry requests per admin per hour.
 - Resend's idempotency protection lasts 24 hours. After **23 hours from the first attempt**, retry stops with `needs_review` to avoid a duplicate after an uncertain response. Inspect Resend's logs and reconcile delivery manually; the portal deliberately has no force-send button that bypasses this safeguard. Notifications that never attempted delivery due to missing configuration can still be sent later.
 - Provider errors are not logged verbatim. Logs omit applicant data, email payloads and credentials. The stored payload contains applicant information and should follow the same retention policy as applications.
 

@@ -2,7 +2,13 @@ import { and, desc, eq, like, or, count } from "drizzle-orm";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { db } from "@/lib/db";
-import { applications, jobs, user, applicationEmails } from "@/lib/db/schema";
+import {
+  applicationConfirmations,
+  applicationEmails,
+  applications,
+  jobs,
+  user,
+} from "@/lib/db/schema";
 import { applicationStatuses, statusLabels } from "@/lib/validation";
 import { ApplicationActions } from "@/components/admin-applications";
 export default async function Page({
@@ -45,8 +51,14 @@ export default async function Page({
         submittedAt: applications.submittedAt,
         status: applications.status,
         note: applications.coverNote,
-        delivery: applicationEmails.state,
-        emailError: applicationEmails.errorCode,
+        recruitment: {
+          state: applicationEmails.state,
+          errorCode: applicationEmails.errorCode,
+        },
+        confirmation: {
+          state: applicationConfirmations.state,
+          errorCode: applicationConfirmations.errorCode,
+        },
       })
       .from(applications)
       .innerJoin(user, eq(user.id, applications.applicantId))
@@ -54,6 +66,10 @@ export default async function Page({
       .leftJoin(
         applicationEmails,
         eq(applicationEmails.applicationId, applications.id),
+      )
+      .leftJoin(
+        applicationConfirmations,
+        eq(applicationConfirmations.applicationId, applications.id),
       )
       .where(where)
       .orderBy(desc(applications.submittedAt), applications.id)
@@ -152,8 +168,8 @@ export default async function Page({
                     <ApplicationActions
                       id={a.id}
                       status={a.status}
-                      delivery={a.delivery}
-                      emailError={a.emailError}
+                      recruitment={a.recruitment}
+                      confirmation={a.confirmation}
                     />
                   </td>
                 </tr>

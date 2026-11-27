@@ -45,13 +45,12 @@ export default async function Page() {
         <h2>Application notifications</h2>
         <p className="mt-3 text-muted">
           {emailConfiguration()
-            ? "Recruitment email is configured. Check notification delivery and retry failures from Applications. Verify your sending domain in Resend before going live."
+            ? "Email settings are present. Check delivery and retry failures from Applications. Verify your sending domain in Resend before going live."
             : "Email setup is incomplete. Configure RESEND_API_KEY, RESEND_FROM_EMAIL and CAREERS_SITE_URL in Vercel. Applications are saved and notifications remain queued until email is configured."}
         </p>
         <p className="mt-3 text-muted">
-          This release emails the recruitment team for new applications.
-          Applicants can track status in their account; applicant confirmation
-          and status emails are not enabled.
+          When a new application is submitted, the applicant receives a
+          confirmation and the recruitment team receives a notification.
         </p>
         <Link className="text-link mt-5" href="/admin/applications">
           Review applications →

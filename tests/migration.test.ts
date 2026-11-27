@@ -63,6 +63,15 @@ test("Upgrade preserves existing users, credentials, resumes, jobs, applications
       0,
       "Do not retroactively notify for old applications",
     );
+    assert.equal(
+      (
+        await client.execute(
+          "SELECT COUNT(*) AS n FROM application_confirmations",
+        )
+      ).rows[0].n,
+      0,
+      "Do not send confirmations for old applications",
+    );
     await assert.rejects(
       client.execute(
         "INSERT INTO applications (id,applicant_id,job_id,resume_url,submitted_at) VALUES ('duplicate','a','j','another',0)",

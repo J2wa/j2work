@@ -2,26 +2,30 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import type { ApplicationEmailKind } from "@/lib/email";
 import { applicationStatuses, statusLabels } from "@/lib/validation";
+
+type EmailDelivery = { state: string; errorCode: string | null } | null;
+
 export function ApplicationActions({
   id,
   status,
-  delivery,
-  emailError,
+  recruitment,
+  confirmation,
 }: {
   id: string;
   status: (typeof applicationStatuses)[number];
-  delivery: string | null;
-  emailError: string | null;
+  recruitment: EmailDelivery;
+  confirmation: EmailDelivery;
 }) {
   const [value, setValue] = useState(status);
   const [busy, setBusy] = useState(false);
   const router = useRouter();
-  async function update(email = false) {
+  async function update(email?: ApplicationEmailKind) {
     setBusy(true);
     try {
       const res = await fetch(
-        `/api/admin/applications/${id}${email ? "/email" : ""}`,
+        `/api/admin/applications/${id}${email ? `/email?kind=${email}` : ""}`,
         {
           method: email ? "POST" : "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -67,27 +71,47 @@ export function ApplicationActions({
       >
         {busy ? "Working…" : "Save status"}
       </button>
-      <small>
-        Recruitment email: {delivery || "Not queued (existing application)"}
-      </small>
-      {emailError && (
-        <small>
-          {emailError === "not_configured"
-            ? "Email configuration required."
-            : emailError === "retry_window_expired"
-              ? "Check Resend delivery logs before any further send."
-              : "Delivery failed. Check email configuration and retry."}
-        </small>
-      )}
-      {delivery && ["pending", "failed", "sending"].includes(delivery) && (
-        <button
-          className="text-link"
-          disabled={busy}
-          onClick={() => update(true)}
-        >
-          Retry notification
-        </button>
-      )}
+      {(
+        [
+          [
+            "recruitment",
+            "Recruitment email",
+            "Retry notification",
+            recruitment,
+          ],
+          [
+            "confirmation",
+            "Applicant confirmation",
+            "Retry confirmation",
+            confirmation,
+          ],
+        ] as const
+      ).map(([kind, label, retryLabel, delivery]) => (
+        <div className="grid gap-1" key={kind}>
+          <small>
+            {label}: {delivery?.state || "Not queued"}
+          </small>
+          {delivery?.errorCode && (
+            <small>
+              {delivery.errorCode === "not_configured"
+                ? "Email configuration required."
+                : delivery.errorCode === "retry_window_expired"
+                  ? "Check Resend delivery logs before any further send."
+                  : "Delivery failed. Check email configuration and retry."}
+            </small>
+          )}
+          {delivery &&
+            ["pending", "failed", "sending"].includes(delivery.state) && (
+              <button
+                className="text-link justify-self-start"
+                disabled={busy}
+                onClick={() => update(kind)}
+              >
+                {retryLabel}
+              </button>
+            )}
+        </div>
+      ))}
     </div>
   );
 }

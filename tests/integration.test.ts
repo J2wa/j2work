@@ -305,6 +305,12 @@ test(
         "pending",
         "Unconfigured email does not invalidate applications",
       );
+      const confirmations = await client.execute(
+        "SELECT application_id, state FROM application_confirmations",
+      );
+      assert.equal(confirmations.rows.length, 1);
+      assert.equal(confirmations.rows[0].application_id, applicationId);
+      assert.equal(confirmations.rows[0].state, "pending");
       assert.equal(
         (
           await mutate(
@@ -544,11 +550,23 @@ test(
         ).status,
         503,
       );
+      assert.equal(
+        (
+          await post(
+            `/api/admin/applications/${applicationId}/email?kind=confirmation`,
+            {},
+            cookie,
+          )
+        ).status,
+        503,
+      );
       const search = await fetch(
         origin + "/admin/applications?q=Updated&status=submitted",
         { headers: { Cookie: cookie } },
       );
-      assert.match(await search.text(), /Updated Applicant/);
+      const searchHtml = await search.text();
+      assert.match(searchHtml, /Updated Applicant/);
+      assert.match(searchHtml, /Applicant confirmation/);
       const noMatches = await fetch(
         origin + "/admin/applications?q=NoSuchName",
         { headers: { Cookie: cookie } },
