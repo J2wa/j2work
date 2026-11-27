@@ -561,6 +561,7 @@ svg {
 
 .hero-brand-mark {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   width: 48%;
   filter: drop-shadow(0 5px 16px rgba(5, 18, 44, 0.24));
