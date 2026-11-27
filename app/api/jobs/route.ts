@@ -12,20 +12,32 @@ const corsHeaders = {
 };
 
 function siteOrigin(request: NextRequest) {
-  const configured =
-    process.env.CAREERS_SITE_URL || process.env.BETTER_AUTH_URL;
-  if (configured) {
+  const origins = [process.env.CAREERS_SITE_URL, process.env.BETTER_AUTH_URL, request.nextUrl.origin];
+  for (const origin of origins) {
+    if (!origin) continue;
     try {
-      return new URL(configured).origin;
-    } catch {}
+      const url = new URL(origin);
+      if ((url.protocol === "http:" || url.protocol === "https:") && !url.username && !url.password) {
+        return url.origin;
+      }
+    } catch {
+      continue;
+    }
   }
-  return request.nextUrl.origin || "https://careers.acesintelligence.xyz";
+  return "https://careers.acesintelligence.xyz";
 }
 
-function resolveHeaderImage(url: string | null, origin: string) {
-  if (!url) return null;
-  if (url.startsWith("/")) return `${origin}${url}`;
-  return url;
+function resolveHeaderImage(value: string | null, origin: string) {
+  if (!value) return null;
+  if (/^\/api\/job-images\/[a-f0-9-]{36}\.(jpg|png|webp)$/.test(value)) {
+    return new URL(value, origin).href;
+  }
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password ? url.href : null;
+  } catch {
+    return null;
+  }
 }
 
 export function OPTIONS() {

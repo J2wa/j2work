@@ -407,19 +407,22 @@ test(
         await (await fetch(origin + `/careers/jobs/${jobId}`)).text(),
         /₱250\.50\/hr/,
       );
+      const preflight = await fetch(origin + "/api/jobs", { method: "OPTIONS" });
+      assert.equal(preflight.status, 204);
+      assert.equal(preflight.headers.get("access-control-allow-origin"), "*");
       const publicFeed = await fetch(origin + "/api/jobs");
       assert.equal(publicFeed.status, 200);
       assert.equal(publicFeed.headers.get("access-control-allow-origin"), "*");
       const publicFeedBody = await publicFeed.json();
-      assert.ok(
-        publicFeedBody.jobs.some(
-          (j: { id: string; url: string; hourlyRatePhpCents: number | null }) =>
-            j.id === jobId &&
-            j.url === `${origin}/careers/jobs/${jobId}` &&
-            j.hourlyRatePhpCents === 25050,
-        ),
-        "Public jobs API includes active job with detail URL and hourly rate",
-      );
+      assert.equal(publicFeedBody.count, publicFeedBody.jobs.length);
+      const publicJob = publicFeedBody.jobs.find((job: { id: string }) => job.id === jobId);
+      assert.ok(publicJob);
+      assert.equal(publicJob.url, `${origin}/careers/jobs/${jobId}`);
+      assert.equal(publicJob.hourlyRatePhpCents, 25050);
+      assert.equal(publicJob.hourlyRateUsdCents, 500);
+      for (const key of ["description", "requirements", "isActive", "applicantId"]) {
+        assert.equal(Object.hasOwn(publicJob, key), false, `Public job omits ${key}`);
+      }
       assert.equal(
         (
           await post(
