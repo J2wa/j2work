@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function Brand({ light = false }: { light?: boolean }) {
@@ -7,9 +8,14 @@ export function Brand({ light = false }: { light?: boolean }) {
       className={`brand ${light ? "text-white" : ""}`}
       aria-label="ACES Intelligence careers home"
     >
-      <svg className="brand-logo" viewBox="335 319 610 466" aria-hidden="true">
-        <image href="/aces-logo.png" width="1280" height="1280" />
-      </svg>
+      <Image
+        className="brand-logo"
+        src={light ? "/aces-logo-white.svg" : "/aces-logo.svg"}
+        alt=""
+        width={38}
+        height={32}
+        unoptimized
+      />
       <span>
         <strong>ACES</strong>
         <small>INTELLIGENCE</small>
