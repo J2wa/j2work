@@ -5,6 +5,7 @@ import { requireApplicant } from "@/lib/auth";
 import { formatRoleLabel } from "@/lib/role-display";
 import { db } from "@/lib/db";
 import { applications, jobs } from "@/lib/db/schema";
+
 const labels: Record<string, string> = {
   submitted: "Submitted",
   reviewing: "Under review",
@@ -12,7 +13,9 @@ const labels: Record<string, string> = {
   hired: "Hired",
   not_selected: "Not selected",
 };
+
 export const metadata = { title: "My applications" };
+
 export default async function Page() {
   const applicant = await requireApplicant();
   const rows = await db()
@@ -30,14 +33,17 @@ export default async function Page() {
     .innerJoin(jobs, eq(jobs.id, applications.jobId))
     .where(eq(applications.applicantId, applicant.id))
     .orderBy(desc(applications.submittedAt));
+
   return (
     <>
       <div className="portal-welcome">
         <div>
+          <span className="eyebrow">Applicant Portal</span>
           <h1>My applications</h1>
+          <p>Track the latest status of every role you have applied to.</p>
         </div>
         <Link href="/careers" className="button secondary">
-          Open roles <ArrowUpRight size={17} />
+          Open roles <ArrowUpRight size={17} aria-hidden="true" />
         </Link>
       </div>
       <div className="stats-row">
@@ -85,16 +91,17 @@ export default async function Page() {
                   </details>
                 ) : null}
               </div>
-              <div className="flex items-center gap-5">
+              <div className="flex items-center gap-4">
                 <span className={`status-badge ${a.status}`}>
                   {labels[a.status]}
                 </span>
                 {a.isActive ? (
                   <Link
+                    className="app-open-link"
                     aria-label={`View ${a.title}`}
                     href={`/careers/jobs/${a.jobId}`}
                   >
-                    <ArrowUpRight size={21} />
+                    <ArrowUpRight size={20} aria-hidden="true" />
                   </Link>
                 ) : (
                   <span className="text-xs text-muted">Position closed</span>
@@ -106,7 +113,7 @@ export default async function Page() {
       ) : (
         <div className="empty-state">
           <div className="empty-icon">
-            <Files size={25} />
+            <Files size={25} aria-hidden="true" />
           </div>
           <h3>No applications yet.</h3>
           <p>
@@ -114,7 +121,7 @@ export default async function Page() {
             status.
           </p>
           <Link href="/careers" className="button">
-            Open roles <ArrowUpRight size={17} />
+            Open roles <ArrowUpRight size={17} aria-hidden="true" />
           </Link>
         </div>
       )}

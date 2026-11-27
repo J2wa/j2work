@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MapPin, Briefcase, Clock } from "lucide-react";
 import type { Job } from "@/lib/db/schema";
 import { formatLocation, formatRoleLabel } from "@/lib/role-display";
 import { ApplyButton } from "./apply-button";
@@ -22,14 +23,26 @@ export function RoleRow({
   return (
     <li className="role-row">
       <div className="role-row-details">
+        <span className="role-row-dept">{formatRoleLabel(job.department)}</span>
         <Heading>
           <Link href={`/careers/jobs/${job.id}`}>{job.title}</Link>
         </Heading>
+        {job.summary ? <p className="role-summary">{job.summary}</p> : null}
         <div className="job-meta">
-          <span>{formatRoleLabel(job.department)}</span>
-          <span>{formatLocation(job.location, job.remote)}</span>
-          <span>{roleType}</span>
-          {workSetting !== roleType && <span>{workSetting}</span>}
+          <span>
+            <MapPin size={14} aria-hidden="true" />
+            {formatLocation(job.location, job.remote)}
+          </span>
+          <span>
+            <Briefcase size={14} aria-hidden="true" />
+            {roleType}
+          </span>
+          {workSetting !== roleType && (
+            <span>
+              <Clock size={14} aria-hidden="true" />
+              {workSetting}
+            </span>
+          )}
         </div>
       </div>
       <RoleHourlyRates job={job} />

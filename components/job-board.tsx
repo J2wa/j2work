@@ -1,10 +1,11 @@
 "use client";
 import { useDeferredValue, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import type { Job } from "@/lib/db/schema";
 import { formatRoleLabel } from "@/lib/role-display";
 import { RoleRow } from "./role-row";
 import { settings } from "@/lib/validation";
+
 export function JobBoard({
   jobs,
   appliedIds,
@@ -32,20 +33,22 @@ export function JobBoard({
       (!role || j.roleType === role) &&
       (!setting || j.workSetting === setting),
   );
-  const showFilters = jobs.length > 6;
+  const showFilters = jobs.length > 0;
   const hasFilters = Boolean(query || department || role || setting);
+
   function clear() {
     setQuery("");
     setDepartment("");
     setRole("");
     setSetting("");
   }
+
   return (
     <>
       {showFilters && (
         <div className="search-filter">
           <div className="search-box">
-            <Search size={20} aria-hidden="true" />
+            <Search size={19} aria-hidden="true" />
             <label htmlFor="job-search" className="sr-only">
               Search roles
             </label>
@@ -58,6 +61,7 @@ export function JobBoard({
             />
           </div>
           <div className="filter-row">
+            <SlidersHorizontal size={15} aria-hidden="true" />
             <label className="sr-only" htmlFor="department">
               Department
             </label>
@@ -104,8 +108,8 @@ export function JobBoard({
               ))}
             </select>
             {hasFilters ? (
-              <button className="text-link" onClick={clear}>
-                Clear filters
+              <button type="button" className="text-link" onClick={clear}>
+                <X size={15} aria-hidden="true" /> Clear filters
               </button>
             ) : null}
           </div>
@@ -113,8 +117,8 @@ export function JobBoard({
       )}
       <p className="role-count" aria-live="polite">
         {hasFilters
-          ? `${filtered.length} of ${jobs.length} open`
-          : `${jobs.length} open`}
+          ? `Showing ${filtered.length} of ${jobs.length} open roles`
+          : `${jobs.length} open ${jobs.length === 1 ? "role" : "roles"}`}
       </p>
       {filtered.length > 0 ? (
         <ul className="role-list" role="list">

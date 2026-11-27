@@ -285,12 +285,12 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
             >
               {job.isActive ? "Active" : "Inactive"}
             </span>
-            <h2 className="mt-4">{job.title}</h2>
+            <h2 className="mt-1">{job.title}</h2>
             <HourlyRates job={job} />
             <p>
               {job.department} · {job.workSetting} · {job.location}
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="job-card-actions">
               <button
                 className="button small secondary"
                 disabled={busy}
@@ -316,7 +316,7 @@ export function JobManagement({ jobs }: { jobs: Job[] }) {
                   setEditing(job.id);
                   setShow(true);
                   setError("");
-                  window.scrollTo({ top: 0 });
+                  window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
               >
                 Edit

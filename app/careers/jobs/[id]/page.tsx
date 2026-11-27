@@ -1,15 +1,16 @@
-import { JobHeaderImage } from "@/components/job-header-image";
-import { RoleHourlyRates } from "@/components/hourly-rates";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, eq } from "drizzle-orm";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Briefcase, Clock, MapPin } from "lucide-react";
+import { JobHeaderImage } from "@/components/job-header-image";
+import { RoleHourlyRates } from "@/components/hourly-rates";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { applications, jobs } from "@/lib/db/schema";
 import { formatLocation, formatRoleLabel } from "@/lib/role-display";
 import { ApplyButton } from "@/components/apply-button";
 import { ApplyForm } from "@/components/apply-form";
+
 export default async function Page({
   params,
 }: {
@@ -32,23 +33,35 @@ export default async function Page({
       : Promise.resolve(undefined),
   ]);
   if (!job) notFound();
+  const roleType = formatRoleLabel(job.roleType);
+  const workSetting = formatRoleLabel(job.workSetting);
   return (
     <>
       <Link className="text-link role-back" href="/careers">
-        <ArrowLeft size={16} /> Open roles
+        <ArrowLeft size={16} aria-hidden="true" /> Open roles
       </Link>
       <div className="role-layout">
-        <article>
+        <article className="role-article">
           <JobHeaderImage url={job.headerImageUrl} />
           <p className="role-department">{formatRoleLabel(job.department)}</p>
           <h1 className="role-title">{job.title}</h1>
-          <RoleHourlyRates job={job} />
+          <div className="role-rate-strip">
+            <RoleHourlyRates job={job} />
+          </div>
           <div className="job-meta role-meta">
-            <span>{formatLocation(job.location, job.remote)}</span>
-            <span>{formatRoleLabel(job.roleType)}</span>
-            {formatRoleLabel(job.workSetting) !==
-              formatRoleLabel(job.roleType) && (
-              <span>{formatRoleLabel(job.workSetting)}</span>
+            <span className="role-meta-pill">
+              <MapPin size={14} aria-hidden="true" />
+              {formatLocation(job.location, job.remote)}
+            </span>
+            <span className="role-meta-pill">
+              <Briefcase size={14} aria-hidden="true" />
+              {roleType}
+            </span>
+            {workSetting !== roleType && (
+              <span className="role-meta-pill">
+                <Clock size={14} aria-hidden="true" />
+                {workSetting}
+              </span>
             )}
           </div>
           <div className="role-copy">
@@ -77,7 +90,7 @@ export default async function Page({
             <p>
               {applicant
                 ? "Upload your resume to apply with your saved profile."
-                : "Log in or create a profile to apply."}
+                : "Log in or create a profile to apply in one click."}
             </p>
             <div className="apply-action">
               <ApplyButton

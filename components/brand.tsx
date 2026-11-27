@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 export function Brand({ light = false }: { light?: boolean }) {
   return (
     <Link
@@ -13,17 +14,21 @@ export function Brand({ light = false }: { light?: boolean }) {
         <strong>ACES</strong>
         <small>INTELLIGENCE</small>
       </span>
-      <span className="brand-divider" />
+      <span className="brand-divider" aria-hidden="true" />
       <span className="brand-careers">CAREERS</span>
     </Link>
   );
 }
+
 export function PublicHeader() {
   return (
     <header className="site-header">
       <div className="shell header-row">
         <Brand />
         <nav aria-label="Main navigation" className="public-nav">
+          <Link className="company-link" href="/careers">
+            Open roles
+          </Link>
           <a className="company-link" href="https://acesintelligence.xyz">
             Our company
           </a>
@@ -38,14 +43,17 @@ export function PublicHeader() {
     </header>
   );
 }
+
 export function Footer() {
   return (
     <footer className="site-footer">
-      <div className="shell flex flex-col justify-between gap-6 sm:flex-row">
-        <p className="text-muted">
-          © {new Date().getFullYear()} ACES Intelligence.
-        </p>
+      <div className="shell footer-inner">
+        <div className="footer-brand-note">
+          <strong>ACES Intelligence Careers</strong>
+          <p>© {new Date().getFullYear()} ACES Intelligence. All rights reserved.</p>
+        </div>
         <div className="footer-links">
+          <Link href="/careers">Open roles</Link>
           <Link href="/privacy">Applicant privacy</Link>
           <a href="https://acesintelligence.xyz/inquiry">Get in touch</a>
           <a href="https://acesintelligence.xyz">Our company</a>
