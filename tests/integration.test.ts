@@ -407,6 +407,19 @@ test(
         await (await fetch(origin + `/careers/jobs/${jobId}`)).text(),
         /₱250\.50\/hr/,
       );
+      const publicFeed = await fetch(origin + "/api/jobs");
+      assert.equal(publicFeed.status, 200);
+      assert.equal(publicFeed.headers.get("access-control-allow-origin"), "*");
+      const publicFeedBody = await publicFeed.json();
+      assert.ok(
+        publicFeedBody.jobs.some(
+          (j: { id: string; url: string; hourlyRatePhpCents: number | null }) =>
+            j.id === jobId &&
+            j.url === `${origin}/careers/jobs/${jobId}` &&
+            j.hourlyRatePhpCents === 25050,
+        ),
+        "Public jobs API includes active job with detail URL and hourly rate",
+      );
       assert.equal(
         (
           await post(
@@ -472,6 +485,11 @@ test(
       ).text();
       assert.match(hidden, /Page unavailable/);
       assert.doesNotMatch(hidden, /Updated role/);
+      const feedAfterHide = await (await fetch(origin + "/api/jobs")).json();
+      assert.ok(
+        !feedAfterHide.jobs.some((j: { id: string }) => j.id === jobId),
+        "Public jobs API hides inactive jobs",
+      );
       const closed = await mutate("/api/admin/jobs/test-job", {
         isActive: false,
       });
