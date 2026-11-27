@@ -173,8 +173,7 @@ export const jobRelations = relations(jobs, ({ many }) => ({
 }));
 export type Job = typeof jobs.$inferSelect;
 
-// One durable recruitment notification per successfully stored application.
-export const applicationEmails = sqliteTable("application_emails", {
+const applicationEmailColumns = () => ({
   applicationId: text("application_id")
     .primaryKey()
     .references(() => applications.id, { onDelete: "cascade" }),
@@ -191,3 +190,13 @@ export const applicationEmails = sqliteTable("application_emails", {
   providerId: text("provider_id"),
   errorCode: text("error_code"),
 });
+
+// Each recipient has an independent delivery record and retry state.
+export const applicationEmails = sqliteTable(
+  "application_emails",
+  applicationEmailColumns(),
+);
+export const applicationConfirmations = sqliteTable(
+  "application_confirmations",
+  applicationEmailColumns(),
+);

@@ -6,7 +6,10 @@ import { join } from "node:path";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
-import { recruitmentEmail } from "../lib/email-template";
+import {
+  applicantConfirmationEmail,
+  recruitmentEmail,
+} from "../lib/email-template";
 import { jobSchema, statusSchema } from "../lib/validation";
 
 test("Email escapes applicant HTML and keeps plain text, Manila date and review link", () => {
@@ -24,6 +27,21 @@ test("Email escapes applicant HTML and keeps plain text, Manila date and review 
   assert.match(email.text, /08:00|8:00/);
   assert.match(email.text, /Asia\/Manila/);
   assert.match(email.text, /QA & AI/);
+});
+test("Applicant receipt names the role and links to the applicant's portal", () => {
+  const email = applicantConfirmationEmail({
+    name: 'Alex <script>alert("hi")</script>',
+    title: "QA & AI\r\nSpecialist",
+    applicationsUrl: "https://careers.example.com/careers/applications",
+  });
+  assert.doesNotMatch(email.html, /<script>/);
+  assert.match(email.html, /QA &amp; AI/);
+  assert.doesNotMatch(email.subject, /[\r\n]/);
+  assert.match(email.text, /We received your application/);
+  assert.match(
+    email.text,
+    /https:\/\/careers\.example\.com\/careers\/applications/,
+  );
 });
 test("Admin input rejects extra fields, malformed jobs and unsupported statuses", () => {
   assert.equal(statusSchema.safeParse({ status: "accepted" }).success, false);
@@ -73,6 +91,9 @@ test("Durable email delivery: config, deduplication, retries, payload stability 
         args: [id],
       });
     }
+    await client.execute(
+      "INSERT INTO application_confirmations (application_id) VALUES ('one')",
+    );
     const { deliverApplicationEmail, RETRY_WINDOW_MS } =
       await import("../lib/email");
     let calls = 0;
@@ -82,7 +103,8 @@ test("Durable email delivery: config, deduplication, retries, payload stability 
       delivered.push({ payload, key });
       return { data: { id: "provider-1" }, error: null };
     };
-    await deliverApplicationEmail("one", sender);
+    await deliverApplicationEmail("one", "recruitment", sender);
+    await deliverApplicationEmail("one", "confirmation", sender);
     assert.equal(calls, 0);
     let row = (
       await client.execute(
@@ -97,10 +119,10 @@ test("Durable email delivery: config, deduplication, retries, payload stability 
     process.env.CAREERS_ADMIN_EMAIL = "recruitment@example.com";
     process.env.CAREERS_SITE_URL = "https://careers.example.com";
     await Promise.all([
-      deliverApplicationEmail("one", sender),
-      deliverApplicationEmail("one", sender),
+      deliverApplicationEmail("one", "recruitment", sender),
+      deliverApplicationEmail("one", "recruitment", sender),
     ]);
-    await deliverApplicationEmail("one", sender);
+    await deliverApplicationEmail("one", "recruitment", sender);
     assert.equal(calls, 1);
     row = (
       await client.execute(
@@ -114,7 +136,7 @@ test("Durable email delivery: config, deduplication, retries, payload stability 
       delivered.push({ payload, key });
       return { data: null, error: { message: "Simulated provider failure" } };
     };
-    await deliverApplicationEmail("two", failing);
+    await deliverApplicationEmail("two", "recruitment", failing);
     assert.equal(
       (
         await client.execute(
@@ -134,19 +156,19 @@ test("Durable email delivery: config, deduplication, retries, payload stability 
       sql: "UPDATE application_emails SET last_attempt_at=? WHERE application_id='two'",
       args: [Date.now() - 61000],
     });
-    await deliverApplicationEmail("two", sender);
+    await deliverApplicationEmail("two", "recruitment", sender);
     assert.deepEqual(
       delivered[1],
       delivered[2],
       "Retries use identical payload and key",
     );
-    await deliverApplicationEmail("three", failing);
+    await deliverApplicationEmail("three", "recruitment", failing);
     await client.execute({
       sql: "UPDATE application_emails SET first_attempt_at=?,last_attempt_at=? WHERE application_id='three'",
       args: [Date.now() - RETRY_WINDOW_MS - 1000, Date.now() - 61000],
     });
     const count = calls;
-    await deliverApplicationEmail("three", sender);
+    await deliverApplicationEmail("three", "recruitment", sender);
     assert.equal(calls, count);
     assert.equal(
       (
@@ -155,6 +177,41 @@ test("Durable email delivery: config, deduplication, retries, payload stability 
         )
       ).rows[0].state,
       "needs_review",
+    );
+    const firstConfirmation = delivered.length;
+    await deliverApplicationEmail("one", "confirmation", failing);
+    assert.equal(
+      (await client.execute("SELECT state FROM application_confirmations"))
+        .rows[0].state,
+      "failed",
+    );
+    await client.execute({
+      sql: "UPDATE application_confirmations SET last_attempt_at=?",
+      args: [Date.now() - 61000],
+    });
+    await client.execute("UPDATE applicants SET email='changed@example.com'");
+    await Promise.all([
+      deliverApplicationEmail("one", "confirmation", sender),
+      deliverApplicationEmail("one", "confirmation", sender),
+    ]);
+    await deliverApplicationEmail("two", "confirmation", sender);
+    assert.equal(delivered.length, firstConfirmation + 2);
+    const receipt = delivered[firstConfirmation];
+    assert.equal(receipt.key, "application/one/confirmation");
+    assert.deepEqual(receipt, delivered[firstConfirmation + 1]);
+    assert.equal((receipt.payload as { to: string }).to, "a@example.com");
+    assert.equal(
+      (await client.execute("SELECT state FROM application_confirmations"))
+        .rows[0].state,
+      "sent",
+    );
+    assert.equal(
+      (
+        await client.execute(
+          "SELECT state FROM application_emails WHERE application_id='one'",
+        )
+      ).rows[0].state,
+      "sent",
     );
   } finally {
     client.close();
