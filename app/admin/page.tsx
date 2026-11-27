@@ -3,25 +3,26 @@ import { ArrowRight } from "lucide-react";
 import { count, eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/admin";
 import { db } from "@/lib/db";
-import { applications, jobs } from "@/lib/db/schema";
+import { applications, domainSpecialists, jobs } from "@/lib/db/schema";
 import { emailConfiguration } from "@/lib/email";
 
 export default async function Page() {
   await requireAdmin();
-  const [groups, active] = await Promise.all([
+  const [groups, active, specialists] = await Promise.all([
     db()
       .select({ status: applications.status, total: count() })
       .from(applications)
       .groupBy(applications.status),
     db().select({ total: count() }).from(jobs).where(eq(jobs.isActive, true)),
+    db().select({ total: count() }).from(domainSpecialists),
   ]);
   const totals = Object.fromEntries(groups.map((g) => [g.status, g.total]));
   const stats = [
     ["Total applications", groups.reduce((n, g) => n + g.total, 0)],
     ["Awaiting review", totals.submitted || 0],
     ["Shortlisted", totals.shortlisted || 0],
-    ["Hired", totals.hired || 0],
     ["Active openings", active[0].total],
+    ["Specialist pool", specialists[0].total],
   ];
   const configured = emailConfiguration();
 
@@ -31,11 +32,16 @@ export default async function Page() {
         <div>
           <div className="eyebrow">Recruitment</div>
           <h1>Dashboard</h1>
-          <p>Manage applications and opportunities in one place.</p>
+          <p>Manage applications, open roles, and the specialist talent pool.</p>
         </div>
-        <Link href="/admin/jobs" className="button">
-          Manage jobs
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/admin/specialists" className="button secondary">
+            Specialist pool
+          </Link>
+          <Link href="/admin/jobs" className="button">
+            Manage jobs
+          </Link>
+        </div>
       </div>
       <div className="admin-stats">
         {stats.map(([label, value]) => (

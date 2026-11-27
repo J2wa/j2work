@@ -33,6 +33,7 @@ export const user = sqliteTable(
     talentPoolOptIn: integer("talent_pool_opt_in", { mode: "boolean" })
       .notNull()
       .default(false),
+    interestedRoles: text("interested_roles").notNull().default("[]"),
     createdAt: time("created_at").notNull(),
     updatedAt: time("updated_at").notNull(),
   },
@@ -191,3 +192,29 @@ export const applicationEmails = sqliteTable("application_emails", {
   providerId: text("provider_id"),
   errorCode: text("error_code"),
 });
+
+export const domainSpecialists = sqliteTable(
+  "domain_specialists",
+  {
+    id: text("id").primaryKey(),
+    fullName: text("full_name").notNull(),
+    email: text("email").notNull().unique(),
+    primaryDomain: text("primary_domain").notNull(),
+    specialtyDetails: text("specialty_details").notNull(),
+    yearsExperience: text("years_experience").notNull(),
+    highestCredential: text("highest_credential").notNull().default(""),
+    preferredWorkSetting: text("preferred_work_setting", { enum: settings })
+      .notNull()
+      .default("Project-Basis"),
+    portfolioUrl: text("portfolio_url").notNull().default(""),
+    availabilityNotes: text("availability_notes").notNull().default(""),
+    createdAt: time("created_at")
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: time("updated_at")
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (t) => [index("specialists_domain_idx").on(t.primaryDomain)],
+);
+export type DomainSpecialist = typeof domainSpecialists.$inferSelect;

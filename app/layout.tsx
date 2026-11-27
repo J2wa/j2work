@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import {
   Atkinson_Hyperlegible_Next,
   Bricolage_Grotesque,
 } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
+
 const bodyFont = Atkinson_Hyperlegible_Next({
   subsets: ["latin"],
   variable: "--font-atkinson",
@@ -25,8 +27,9 @@ export const metadata: Metadata = {
     template: "%s | ACES Careers",
   },
   description:
-    "Find open roles in data annotation, model evaluation, quality assurance and engineering at ACES Intelligence.",
+    "Find open roles in data annotation, model evaluation, quality assurance and engineering, or join the ACES Intelligence Domain Specialist Talent Pool.",
 };
+
 export default function RootLayout({
   children,
 }: {
@@ -40,6 +43,7 @@ export default function RootLayout({
         </a>
         {children}
         <Toaster position="bottom-right" richColors closeButton />
+        <Script src="/aces-logo.js" strategy="afterInteractive" />
       </body>
     </html>
   );
