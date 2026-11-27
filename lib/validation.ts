@@ -1,10 +1,33 @@
 import { z } from "zod";
+import {
+  CREDENTIAL_LEVELS,
+  EXPERIENCE_LEVELS,
+  SPECIALIST_DOMAINS,
+} from "./role-catalog";
+
 export const settings = ["Full-Time", "Part-Time", "Project-Basis"] as const;
 export const MAX_RESUME_SIZE = 5 * 1024 * 1024;
 export const resumeTypes = [
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
+
+export const interestedRolesSchema = z.preprocess((value) => {
+  if (typeof value === "string") {
+    if (!value.trim()) return [];
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      return value
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+  }
+  return value;
+}, z.array(z.string().trim().min(1).max(160)).max(30).default([]));
+
 export const profileSchema = z.object({
   name: z.string().trim().min(2, "Enter your full name.").max(120),
   phone: z
@@ -20,19 +43,65 @@ export const profileSchema = z.object({
   }),
   referredBy: z.string().trim().max(120),
   talentPoolOptIn: z.boolean(),
+  interestedRoles: interestedRolesSchema,
 });
+
 export const signupSchema = profileSchema.extend({
   email: z.email("Enter a valid email address.").trim().toLowerCase().max(254),
   password: z.string().min(12, "Use at least 12 characters.").max(128),
 });
+
 export const loginSchema = z.object({
   email: z.email("Enter a valid email address.").trim().toLowerCase(),
   password: z.string().min(1, "Enter your password.").max(128),
 });
+
 export const applicationSchema = z.object({
   jobId: z.string().min(1).max(80),
   coverNote: z.string().trim().max(3000).default(""),
 });
+
+export const specialistSchema = z
+  .object({
+    fullName: z.string().trim().min(2, "Enter your full name.").max(120),
+    email: z
+      .email("Enter a valid email address.")
+      .trim()
+      .toLowerCase()
+      .max(254),
+    primaryDomain: z.enum(SPECIALIST_DOMAINS, {
+      error: "Select your primary domain of expertise.",
+    }),
+    specialtyDetails: z
+      .string()
+      .trim()
+      .min(3, "Describe your specialty, degree, or license.")
+      .max(240),
+    yearsExperience: z.enum(EXPERIENCE_LEVELS, {
+      error: "Select your years of experience.",
+    }),
+    highestCredential: z.enum(CREDENTIAL_LEVELS, {
+      error: "Select your highest credential.",
+    }),
+    preferredWorkSetting: z.enum(settings).default("Project-Basis"),
+    portfolioUrl: z
+      .string()
+      .trim()
+      .max(500)
+      .refine((value) => {
+        if (!value) return true;
+        try {
+          const url = new URL(value);
+          return url.protocol === "https:" && !url.username && !url.password;
+        } catch {
+          return false;
+        }
+      }, "Use a valid https:// link (LinkedIn, portfolio, or Scholar profile).")
+      .default(""),
+    availabilityNotes: z.string().trim().max(1000).default(""),
+  })
+  .strict();
+
 export function resumeError(
   file: { name: string; size: number; type: string } | null,
 ) {
@@ -53,6 +122,7 @@ export const applicationStatuses = [
   "hired",
   "not_selected",
 ] as const;
+
 export const statusLabels: Record<
   (typeof applicationStatuses)[number],
   string
@@ -63,9 +133,11 @@ export const statusLabels: Record<
   hired: "Hired",
   not_selected: "Not selected",
 };
+
 export const statusSchema = z
   .object({ status: z.enum(applicationStatuses) })
   .strict();
+
 export const jobSchema = z
   .object({
     title: z.string().trim().min(2).max(160),

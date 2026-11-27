@@ -5,12 +5,21 @@ import { useRouter } from "next/navigation";
 import { Check, LoaderCircle, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Field, PasswordField, ResumePicker } from "./fields";
+import { RoleChecklist } from "./role-checklist";
 import { signupSchema, settings, resumeError } from "@/lib/validation";
+import { serializeInterestedRoles } from "@/lib/role-catalog";
 import { authClient } from "@/lib/auth-client";
 import { uploadResume } from "@/lib/upload-client";
 import { withReturnPath } from "@/lib/return-path";
 import { formatRoleLabel } from "@/lib/role-display";
-export function SignupForm({ next }: { next?: string }) {
+
+export function SignupForm({
+  next,
+  availableRoles = [],
+}: {
+  next?: string;
+  availableRoles?: string[];
+}) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
@@ -27,11 +36,14 @@ export function SignupForm({ next }: { next?: string }) {
     preferredWorkSetting: "" as string,
     referredBy: "",
     talentPoolOptIn: false,
+    interestedRoles: [] as string[],
   });
-  function change(key: string, value: string | boolean) {
+
+  function change(key: string, value: string | boolean | string[]) {
     setValues((v) => ({ ...v, [key]: value }));
     setErrors((e) => ({ ...e, [key]: "" }));
   }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
@@ -65,7 +77,11 @@ export function SignupForm({ next }: { next?: string }) {
       let id = accountId;
       if (!id) {
         setStage("Creating your account…");
-        const response = await authClient.signUp.email(result.data);
+        const { interestedRoles, ...signupFields } = result.data;
+        const response = await authClient.signUp.email({
+          ...signupFields,
+          interestedRoles: serializeInterestedRoles(interestedRoles),
+        });
         if (response.error)
           throw new Error(
             response.error.message || "We couldn’t create your account.",
@@ -90,6 +106,7 @@ export function SignupForm({ next }: { next?: string }) {
       setBusy(false);
     }
   }
+
   return (
     <>
       <h1>Create profile</h1>
@@ -102,7 +119,7 @@ export function SignupForm({ next }: { next?: string }) {
           <b>{step > 1 ? <Check size={12} /> : 1}</b>Your details
         </span>
         <span className={step === 2 ? "active" : ""}>
-          <b>2</b>Work preferences and resume
+          <b>2</b>Roles, preferences &amp; resume
         </span>
       </div>
       <form onSubmit={submit} noValidate>
@@ -174,6 +191,13 @@ export function SignupForm({ next }: { next?: string }) {
                   <p className="field-error">{errors.preferredWorkSetting}</p>
                 ) : null}
               </fieldset>
+              <RoleChecklist
+                selected={values.interestedRoles}
+                onChange={(roles) => change("interestedRoles", roles)}
+                extraRoles={availableRoles}
+                disabled={busy}
+                error={errors.interestedRoles}
+              />
               <Field
                 label="Referred by"
                 placeholder="Name of the person who referred you"
@@ -257,7 +281,7 @@ export function SignupForm({ next }: { next?: string }) {
                 <LoaderCircle size={18} className="animate-spin" /> Please wait
               </>
             ) : step === 1 ? (
-              <>Continue </>
+              <>Continue</>
             ) : accountId ? (
               "Retry resume upload"
             ) : (

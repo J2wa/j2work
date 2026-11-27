@@ -29,6 +29,12 @@ export default function Page() {
             talent pool checkbox records your permission to receive future
             opportunity emails. It does not affect your ability to apply.
           </p>
+          <p>
+            If you submit the specialist talent pool form, authorized
+            recruitment staff use your contact details, credentials, and any
+            portfolio link or availability notes you share to assess your fit
+            for upcoming projects and contact you about them.
+          </p>
           <h2>Storage and access</h2>
           <p>
             The portal uses Turso for account and application records, and

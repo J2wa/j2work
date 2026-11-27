@@ -2,7 +2,13 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Brand, Footer } from "./brand";
 
-export function AuthShell({ children }: { children: React.ReactNode }) {
+export function AuthShell({
+  children,
+  wide = false,
+}: {
+  children: React.ReactNode;
+  wide?: boolean;
+}) {
   return (
     <div className="auth-page-bg">
       <header className="shell auth-header">
@@ -11,7 +17,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           <ArrowLeft size={15} aria-hidden="true" /> Open roles
         </Link>
       </header>
-      <main id="main" className="auth-main">
+      <main id="main" className={`auth-main ${wide ? "auth-main-wide" : ""}`}>
         <section className="auth-panel">{children}</section>
       </main>
       <Footer />

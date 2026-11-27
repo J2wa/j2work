@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 export function AdminNav() {
   const path = usePathname();
   return (
@@ -9,6 +10,7 @@ export function AdminNav() {
         ["/admin", "Overview"],
         ["/admin/applications", "Applications"],
         ["/admin/jobs", "Jobs"],
+        ["/admin/specialists", "Specialist pool"],
       ].map(([href, label]) => (
         <Link
           key={href}

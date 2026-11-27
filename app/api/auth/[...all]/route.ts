@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { signupSchema, loginSchema } from "@/lib/validation";
+import { serializeInterestedRoles } from "@/lib/role-catalog";
 import { fail, serviceError } from "@/lib/http";
 import { adminAccess } from "@/lib/admin";
 import { sameOrigin } from "@/lib/http";
@@ -23,11 +24,33 @@ export async function POST(request: NextRequest) {
       return fail("Invalid origin.", 403);
     if (path.endsWith("/update-user"))
       return fail("Use the profile settings page.", 403);
-    if (path.endsWith("/sign-up/email") || path.endsWith("/sign-in/email")) {
+    if (path.endsWith("/sign-up/email")) {
       const body = await request.clone().json();
-      const result = (
-        path.endsWith("/sign-up/email") ? signupSchema : loginSchema
-      ).safeParse(body);
+      const result = signupSchema.safeParse(body);
+      if (!result.success)
+        return Response.json(
+          {
+            message: result.error.issues[0].message,
+            errors: result.error.flatten().fieldErrors,
+          },
+          { status: 400 },
+        );
+      const normalized = new Request(request.url, {
+        method: request.method,
+        headers: new Headers(request.headers),
+        body: JSON.stringify({
+          ...body,
+          ...result.data,
+          interestedRoles: serializeInterestedRoles(
+            result.data.interestedRoles,
+          ),
+        }),
+      });
+      return await auth().handler(normalized);
+    }
+    if (path.endsWith("/sign-in/email")) {
+      const body = await request.clone().json();
+      const result = loginSchema.safeParse(body);
       if (!result.success)
         return Response.json(
           {
