@@ -72,6 +72,7 @@ export default async function Page({
     <>
       <div className="portal-welcome">
         <div>
+          <span className="eyebrow">Recruitment</span>
           <h1>Applications</h1>
           <p>
             {total[0].total} matching applications · Dates shown in Manila time
@@ -129,7 +130,7 @@ export default async function Page({
                   <td data-label="Job / resume">
                     <strong>{a.title}</strong>
                     <a
-                      className="text-link mt-3"
+                      className="text-link mt-2"
                       href={`/api/admin/applications/${a.id}/resume`}
                     >
                       Download submitted resume

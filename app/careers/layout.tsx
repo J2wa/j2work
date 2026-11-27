@@ -2,7 +2,9 @@ import Link from "next/link";
 import { Brand, Footer, PublicHeader } from "@/components/brand";
 import { PortalNav } from "@/components/portal-nav";
 import { getSession } from "@/lib/auth";
+
 export const dynamic = "force-dynamic";
+
 export default async function Layout({
   children,
 }: {
@@ -21,7 +23,7 @@ export default async function Layout({
                   Admin dashboard
                 </Link>
               )}
-              <Link href="/careers/profile" className="text-link">
+              <Link href="/careers/profile" className="button small secondary">
                 My profile
               </Link>
             </div>
@@ -31,8 +33,10 @@ export default async function Layout({
         <PublicHeader />
       )}
       {session && (
-        <div className="shell">
-          <PortalNav />
+        <div className="portal-subnav-bar">
+          <div className="shell">
+            <PortalNav />
+          </div>
         </div>
       )}
       <main id="main" className="shell portal-main">

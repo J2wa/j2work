@@ -10,6 +10,7 @@ export default async function Page() {
     <>
       <div className="portal-welcome">
         <div>
+          <span className="eyebrow">Recruitment</span>
           <h1>Jobs</h1>
           <p>
             Create opportunities and control which jobs appear on the careers

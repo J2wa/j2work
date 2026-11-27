@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { count, eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/admin";
 import { db } from "@/lib/db";
 import { applications, jobs } from "@/lib/db/schema";
 import { emailConfiguration } from "@/lib/email";
+
 export default async function Page() {
   await requireAdmin();
   const [groups, active] = await Promise.all([
@@ -21,11 +23,13 @@ export default async function Page() {
     ["Hired", totals.hired || 0],
     ["Active openings", active[0].total],
   ];
+  const configured = emailConfiguration();
+
   return (
     <>
       <div className="portal-welcome">
         <div>
-          <div className="eyebrow">RECRUITMENT</div>
+          <div className="eyebrow">Recruitment</div>
           <h1>Dashboard</h1>
           <p>Manage applications and opportunities in one place.</p>
         </div>
@@ -42,9 +46,16 @@ export default async function Page() {
         ))}
       </div>
       <div className="panel">
-        <h2>Application notifications</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2>Application notifications</h2>
+          <span
+            className={`status-badge ${configured ? "shortlisted" : "reviewing"}`}
+          >
+            {configured ? "Configured" : "Setup needed"}
+          </span>
+        </div>
         <p className="mt-3 text-muted">
-          {emailConfiguration()
+          {configured
             ? "Recruitment email is configured. Check notification delivery and retry failures from Applications. Verify your sending domain in Resend before going live."
             : "Email setup is incomplete. Configure RESEND_API_KEY, RESEND_FROM_EMAIL and CAREERS_SITE_URL in Vercel. Applications are saved and notifications remain queued until email is configured."}
         </p>
@@ -54,7 +65,7 @@ export default async function Page() {
           and status emails are not enabled.
         </p>
         <Link className="text-link mt-5" href="/admin/applications">
-          Review applications →
+          Review applications <ArrowRight size={16} aria-hidden="true" />
         </Link>
       </div>
     </>
