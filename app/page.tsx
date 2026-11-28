@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  Layers,
+  Sparkles,
+  ShieldCheck,
+  GraduationCap,
+  CheckCircle2,
+  Globe2,
+  FileText,
+} from "lucide-react";
 import { AcesLogoMark, PublicHeader, Footer } from "@/components/brand";
 import { eq, desc, count } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -9,6 +18,7 @@ import { getSession } from "@/lib/auth";
 import { RoleRow } from "@/components/role-row";
 import { RoleRowsSkeleton } from "@/components/role-rows-skeleton";
 import { SpecialistPoolForm } from "@/components/specialist-pool-form";
+import { CareersHeroMotion } from "@/components/careers-hero-motion";
 
 export const dynamic = "force-dynamic";
 
@@ -41,14 +51,19 @@ async function HomeRoles() {
     <>
       <div className="section-header">
         <div>
-          <span className="eyebrow">Now Hiring</span>
-          <h2 id="open-roles">Open roles</h2>
+          <span className="eyebrow">01 / Now Hiring</span>
+          <h2 id="open-roles">
+            Open <span className="accent-serif">roles.</span>
+          </h2>
           <p className="section-subtitle">
             Apply directly to active remote openings with transparent hourly
-            rates.
+            rates in PHP and USD.
           </p>
         </div>
-        <span className="count-pill">{totalOpen} open</span>
+        <span className="count-pill">
+          <span className="count-pill-dot" aria-hidden="true" />
+          {totalOpen} open
+        </span>
       </div>
       {roles.length > 0 ? (
         <ul className="role-list" role="list">
@@ -68,7 +83,7 @@ async function HomeRoles() {
       )}
       <div className="all-roles-bar">
         <Link className="text-link" href="/careers">
-          View all roles <ArrowRight size={16} aria-hidden="true" />
+          View all open roles <ArrowRight size={16} aria-hidden="true" />
         </Link>
       </div>
     </>
@@ -78,13 +93,15 @@ async function HomeRoles() {
 const tracks = [
   {
     num: "01",
+    icon: Layers,
     title: "Data & Multimodal Annotation",
-    copy: "Video, image, audio, and multilingual labeling built to clear project rubrics.",
+    copy: "Video, image, speech, music, and multilingual labeling built to clear project rubrics.",
     href: "/careers",
     cta: "Browse roles",
   },
   {
     num: "02",
+    icon: Sparkles,
     title: "Model Evaluation & RLHF",
     copy: "Side-by-side response grading, factuality checks, prompt craft, and AI safety testing.",
     href: "/careers",
@@ -92,13 +109,15 @@ const tracks = [
   },
   {
     num: "03",
+    icon: ShieldCheck,
     title: "Quality & Operations",
-    copy: "Reviewer calibration, edge-case triage, and smooth remote project delivery.",
+    copy: "Reviewer calibration, edge-case triage, and dependable remote project delivery.",
     href: "/careers",
     cta: "Browse roles",
   },
   {
     num: "04",
+    icon: GraduationCap,
     title: "Domain Specialists",
     copy: "Practicing doctors, engineers, lawyers, CPAs, and researchers guiding frontier AI.",
     href: "#specialist-pool",
@@ -132,7 +151,7 @@ const steps = [
     number: "03",
     title: "Track every stage",
     description:
-      "Follow each application from submission to shortlisting directly inside your ACES applicant portal.",
+      "Follow each application from submission to shortlisting directly inside your ACES Careers portal.",
   },
 ];
 
@@ -141,22 +160,26 @@ export default function Home() {
     <>
       <PublicHeader />
       <main id="main">
-        {/* Hero */}
-        <section className="home-hero">
+        {/* Revamped Editorial Hero */}
+        <section className="home-hero" data-hero-glow="">
+          <div className="hero-cursor-glow" aria-hidden="true" />
           <div className="shell home-hero-grid">
             <div className="home-intro">
-              <span className="eyebrow home-eyebrow">
-                ACES Intelligence Careers
+              <span className="eyebrow home-eyebrow" data-reveal="">
+                ACES Ecosystem · ACES Careers
               </span>
-              <h1>Remote work that makes AI better</h1>
-              <p className="home-lead">
+              <h1 data-reveal="" data-delay="60">
+                Remote work that makes{" "}
+                <span className="accent-serif">AI better.</span>
+              </h1>
+              <p className="home-lead" data-reveal="" data-delay="120">
                 Join ACES Intelligence across data annotation, model evaluation,
                 quality assurance, and engineering—or register your field
                 credentials in our Domain Specialist Talent Pool for upcoming
                 expert AI projects.
               </p>
-              <div className="home-actions">
-                <Link href="#open-roles" className="button">
+              <div className="home-actions" data-reveal="" data-delay="180">
+                <Link href="#open-roles" className="button" data-magnetic="">
                   See open roles <ArrowRight size={16} aria-hidden="true" />
                 </Link>
                 <Link href="#specialist-pool" className="button secondary">
@@ -166,44 +189,63 @@ export default function Home() {
                   Create profile
                 </Link>
               </div>
-              <ul className="home-proof" aria-label="Portal highlights">
-                <li>Remote-first roles</li>
-                <li>Transparent PHP &amp; USD hourly rates</li>
-                <li>One reusable resume</li>
+              <ul
+                className="home-proof"
+                aria-label="Portal highlights"
+                data-reveal=""
+                data-delay="240"
+              >
+                <li>
+                  <Globe2 size={15} aria-hidden="true" />
+                  Remote · Philippines &amp; Global
+                </li>
+                <li>
+                  <CheckCircle2 size={15} aria-hidden="true" />
+                  Transparent PHP &amp; USD rates
+                </li>
+                <li>
+                  <FileText size={15} aria-hidden="true" />
+                  One reusable resume
+                </li>
               </ul>
             </div>
 
-            <div className="hero-brand-stage" aria-hidden="true">
-              <div className="hero-brand-mark">
-                <AcesLogoMark
-                  size={220}
-                  theme="dark"
-                  wordmark="hide"
-                  track="off"
-                />
-              </div>
+            {/* Interactive Auto-Cycling Careers Motion Switcher */}
+            <div data-reveal="" data-delay="180">
+              <CareersHeroMotion />
             </div>
           </div>
         </section>
 
-        {/* Core Tracks Strip */}
+        {/* Core Tracks Cards */}
         <section className="tracks-band" aria-label="Work tracks">
           <div className="shell">
             <div className="tracks-grid">
-              {tracks.map((track) => (
-                <Link
-                  href={track.href}
-                  key={track.num}
-                  className="track-column"
-                >
-                  <span className="step-num">{track.num}</span>
-                  <h2>{track.title}</h2>
-                  <p>{track.copy}</p>
-                  <span className="track-cta">
-                    {track.cta} <ArrowRight size={14} aria-hidden="true" />
-                  </span>
-                </Link>
-              ))}
+              {tracks.map((track, idx) => {
+                const Icon = track.icon;
+                return (
+                  <Link
+                    href={track.href}
+                    key={track.num}
+                    className="track-column"
+                    data-reveal=""
+                    data-delay={String(idx * 65)}
+                    data-tilt=""
+                  >
+                    <div className="track-top">
+                      <span className="track-icon" aria-hidden="true">
+                        <Icon size={18} />
+                      </span>
+                      <span className="step-num">[ {track.num} ]</span>
+                    </div>
+                    <h2>{track.title}</h2>
+                    <p>{track.copy}</p>
+                    <span className="track-cta">
+                      {track.cta} <ArrowRight size={14} aria-hidden="true" />
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -216,8 +258,10 @@ export default function Home() {
                 <>
                   <div className="section-header">
                     <div>
-                      <span className="eyebrow">Now Hiring</span>
-                      <h2 id="open-roles">Open roles</h2>
+                      <span className="eyebrow">01 / Now Hiring</span>
+                      <h2 id="open-roles">
+                        Open <span className="accent-serif">roles.</span>
+                      </h2>
                     </div>
                   </div>
                   <RoleRowsSkeleton />
@@ -236,10 +280,10 @@ export default function Home() {
           aria-labelledby="specialist-heading"
         >
           <div className="shell specialist-grid">
-            <div className="specialist-pitch">
+            <div className="specialist-pitch" data-reveal="">
               <div className="specialist-logo-wrap">
                 <AcesLogoMark
-                  size={136}
+                  size={124}
                   theme="dark"
                   wordmark="show"
                   animate="none"
@@ -247,10 +291,13 @@ export default function Home() {
                 />
               </div>
               <span className="specialist-eyebrow">
-                Domain Specialist Talent Pool
+                02 / Domain Specialist Talent Pool
               </span>
               <h2 id="specialist-heading">
-                Bring your field expertise to frontier AI
+                Bring your field expertise to{" "}
+                <span className="accent-serif accent-serif-light">
+                  frontier AI.
+                </span>
               </h2>
               <p className="specialist-lead">
                 Not seeing a live opening in your specialty yet? Join our vetted
@@ -279,31 +326,85 @@ export default function Home() {
               </dl>
             </div>
 
-            <SpecialistPoolForm />
+            <div data-reveal="" data-delay="120">
+              <SpecialistPoolForm />
+            </div>
           </div>
         </section>
 
         {/* How to Apply */}
         <section className="landing-steps-band" aria-labelledby="how-to-apply">
           <div className="shell">
-            <div className="section-header">
+            <div className="section-header" data-reveal="">
               <div>
-                <span className="eyebrow">Simple Process</span>
-                <h2 id="how-to-apply">How to apply</h2>
+                <span className="eyebrow">03 / Simple Process</span>
+                <h2 id="how-to-apply">
+                  One profile.{" "}
+                  <span className="accent-serif">Direct applications.</span>
+                </h2>
               </div>
-              <Link href="/signup" className="button secondary small">
+              <Link
+                href="/signup"
+                className="button secondary small"
+                data-magnetic=""
+              >
                 Create profile <ArrowRight size={15} aria-hidden="true" />
               </Link>
             </div>
             <ol className="steps-strip">
-              {steps.map((step) => (
-                <li className="step-card" key={step.number}>
-                  <span className="step-num">{step.number}</span>
+              {steps.map((step, idx) => (
+                <li
+                  className="step-card"
+                  key={step.number}
+                  data-reveal=""
+                  data-delay={String(idx * 80)}
+                  data-tilt=""
+                >
+                  <span className="step-num">[ {step.number} ]</span>
                   <h3>{step.title}</h3>
                   <p>{step.description}</p>
                 </li>
               ))}
             </ol>
+          </div>
+        </section>
+
+        {/* Bottom CTA */}
+        <section
+          className="careers-bottom-cta-band"
+          aria-labelledby="cta-heading"
+        >
+          <div className="shell">
+            <div className="careers-bottom-cta" data-reveal="">
+              <div>
+                <span className="eyebrow cta-eyebrow">04 / Get Started</span>
+                <h2 id="cta-heading">
+                  Ready to put your expertise{" "}
+                  <span className="accent-serif accent-serif-light">
+                    to work?
+                  </span>
+                </h2>
+              </div>
+              <div>
+                <p>
+                  Create your free ACES Careers profile once and apply in a
+                  single click across open AI evaluation, annotation, and
+                  engineering roles.
+                </p>
+                <div className="careers-cta-actions">
+                  <Link
+                    href="/careers"
+                    className="button cta-btn-light"
+                    data-magnetic=""
+                  >
+                    Browse open roles <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
+                  <Link href="/signup" className="cta-btn-outline">
+                    Create profile
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>

@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { eq, desc } from "drizzle-orm";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -25,17 +27,34 @@ export default async function Page() {
   ]);
   return (
     <>
-      <div className="careers-header">
-        <div>
-          <span className="eyebrow">Careers at ACES</span>
-          <h1 className="careers-heading">Open roles</h1>
+      <section
+        className="careers-banner"
+        data-hero-glow=""
+        data-reveal=""
+        aria-labelledby="open-roles-heading"
+      >
+        <div className="careers-banner-copy">
+          <span className="eyebrow">ACES Ecosystem · ACES Careers</span>
+          <h1 id="open-roles-heading" className="careers-heading">
+            Open <span className="accent-serif">roles.</span>
+          </h1>
           <p className="careers-subtitle">
-            Find your next role in data annotation, model evaluation, quality
-            assurance, or engineering.
+            Browse active remote roles in data annotation, model evaluation,
+            quality assurance, and engineering—all with transparent hourly
+            rates.
           </p>
         </div>
-        <span className="count-pill">{roles.length} open</span>
-      </div>
+        <div className="careers-banner-side">
+          <span className="count-pill">
+            <span className="count-pill-dot" aria-hidden="true" />
+            {roles.length} open {roles.length === 1 ? "role" : "roles"}
+          </span>
+          <Link href="/#specialist-pool" className="text-link">
+            Don’t see your field? Join the specialist pool{" "}
+            <ArrowRight size={15} aria-hidden="true" />
+          </Link>
+        </div>
+      </section>
       <JobBoard
         jobs={roles}
         appliedIds={submitted.map((a) => a.jobId)}

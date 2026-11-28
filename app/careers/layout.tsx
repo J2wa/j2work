@@ -28,6 +28,7 @@ export default async function Layout({
               </Link>
             </div>
           </div>
+          <div className="scroll-progress" id="scrollProgress" aria-hidden="true" />
         </header>
       ) : (
         <PublicHeader />
